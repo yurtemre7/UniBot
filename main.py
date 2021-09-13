@@ -53,8 +53,9 @@ class MyClient(discord.Client):
         if (not message.author.bot) and config.has_option(guild_id, "modlog"):
             try:
                 async for entry in message.guild.audit_logs(limit=1, action=discord.AuditLogAction.message_delete):
+                    author_can_delete_massages = message.author.permissions_in(message.channel).manage_messages
                     timestamp = str(entry.created_at.now(timezone("Europe/Berlin"))).split("+")[0]
-                    if entry.user.id == message.author.id:
+                    if author_can_delete_massages:
                         return
                     if timestamp == str(datetime.now()):  # Custom time function
                         embed = discord.Embed(title="Message Deleted By Mod")
