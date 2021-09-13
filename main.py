@@ -60,15 +60,29 @@ class MyClient(discord.Client):
                         embed = discord.Embed(title="Message Deleted By Mod")
                         embed.add_field(name="Member: ", value=message.author.mention, inline=True)
                         embed.add_field(name="Mod: ", value=entry.user.mention, inline=True)
-                        embed.add_field(name="Message: ", value=message.content, inline=False)
+
+                        # Media might not have message content
+                        if message.content:
+                            embed.add_field(name="Message: ", value=message.content, inline=False)
+                        else:
+                            embed.add_field(name="Message: ", value="None", inline=False)
+
                         embed.add_field(name="Channel: ", value=message.channel.mention, inline=False)
+
+                        # List of media urls, display first image
+                        if message.attachments:
+                            links = ""
+                            for url in message.attachments:
+                                links += str(url) + "\n"
+                            embed.add_field(name="Media: ", value=links, inline=False)
+                            embed.set_image(url=message.attachments[0])
 
                         modlog_id = config.get(guild_id, "modlog")
                         modlog = await client.fetch_channel(modlog_id)
-
                         await modlog.send(embed=embed)
+
             except discord.errors.Forbidden:
-                logging.warning("Missing Permissions for logging message deletion")
+                logging.warning("Missing permissions for logging message deletion")
 
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if payload.user_id == client.user.id:
