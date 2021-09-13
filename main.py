@@ -7,6 +7,9 @@ from discord_slash.utils.manage_commands import create_option
 from discord.ext.commands import has_permissions
 from dotenv import load_dotenv
 
+from pytz import timezone
+from datetime import datetime
+
 import logging
 from configparser import ConfigParser
 
@@ -14,10 +17,11 @@ from configparser import ConfigParser
 
 config = ConfigParser(delimiters="=")
 config.read_file(codecs.open("config.ini", "r", "utf8"))
-# config.read("config.ini")
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+
+logging.basicConfig(level=logging.WARNING)
 
 #   --- Option Types ---
 
@@ -42,6 +46,29 @@ class MyClient(discord.Client):
 
         if "plagiat" in message.content.lower():
             await message.add_reaction("🚨")
+
+    # Ctrl+C, Ctrl+V
+    async def on_message_delete(self, message: discord.Message):
+        guild_id = str(message.guild.id)
+        if (not message.author.bot) and config.has_option(guild_id, "modlog"):
+            try:
+                async for entry in message.guild.audit_logs(limit=1, action=discord.AuditLogAction.message_delete):
+                    timestamp = str(entry.created_at.now(timezone("Europe/Berlin"))).split("+")[0]
+                    if entry.user.id == message.author.id:
+                        return
+                    if timestamp == str(datetime.now()):  # Custom time function
+                        embed = discord.Embed(title="Message Deleted By Mod")
+                        embed.add_field(name="Member: ", value=message.author.mention, inline=True)
+                        embed.add_field(name="Mod: ", value=entry.user.mention, inline=True)
+                        embed.add_field(name="Message: ", value=message.content, inline=False)
+                        embed.add_field(name="Channel: ", value=message.channel.mention, inline=False)
+
+                        modlog_id = config.get(guild_id, "modlog")
+                        modlog = await client.fetch_channel(modlog_id)
+
+                        await modlog.send(embed=embed)
+            except discord.errors.Forbidden:
+                logging.warning("Missing Permissions for logging message deletion")
 
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if payload.user_id == client.user.id:
@@ -97,29 +124,32 @@ async def ping(ctx: SlashContext):
     await ctx.send("Pong!")
 
 
-@has_permissions(manage_roles=True)
-@slash.slash(name="set_role_message", guild_ids=guild_ids, description="Set message that is used to add roles",
-             options=[
-                 create_option(
-                     name="message_link",
-                     description="link to the message",
-                     option_type=STRING,
-                     required=True
-                 )
-             ])
-async def set_role_message(ctx: SlashContext, message_link: str):
-    guild_id = str(ctx.guild_id)
-    if "https://discord.com/channels/" in message_link:
-        if not config.has_section(guild_id):
-            config.add_section(str(guild_id))
-        config.set(guild_id, "role_message", message_link)
+try:
+    @has_permissions(manage_roles=True)
+    @slash.slash(name="set_role_message", guild_ids=guild_ids, description="Set message that is used to add roles",
+                 options=[
+                     create_option(
+                         name="message_link",
+                         description="link to the message",
+                         option_type=STRING,
+                         required=True
+                     )
+                 ])
+    async def set_role_message(ctx: SlashContext, message_link: str):
+        guild_id = str(ctx.guild_id)
+        if "https://discord.com/channels/" in message_link:
+            if not config.has_section(guild_id):
+                config.add_section(str(guild_id))
+            config.set(guild_id, "role_message", message_link)
 
-        with open('config.ini', 'w') as f:
-            config.write(f)
-
-        await ctx.send(f"Set role message to <{message_link}>.")
-    else:
-        await ctx.send("Error: Make sure you've got the right link")
+            with open('config.ini', 'w', encoding="utf-8") as f:
+                config.write(f)
+                logging.info(f"{guild_id}: Set new role message to {message_link}")
+            await ctx.send(f"Set role message to <{message_link}>.")
+        else:
+            await ctx.send("Error: Make sure you've got the right link")
+except discord.ext.commands.errors.MissingPermissions:
+    pass
 
 
 @slash.slash(name="get_role_message", guild_ids=guild_ids, description="Returns link to role message")
@@ -131,48 +161,75 @@ async def get_role_message(ctx: SlashContext):
         await ctx.send("Not defined yet! Use 'set_role_message' first")
 
 
-@has_permissions(manage_roles=True)
-@slash.slash(name="add_reaction_role", guild_ids=None, description="Add emoji to assign roll",
-             options=[
-                 create_option(
-                     name="role",
-                     description="role that should be assigned",
-                     option_type=ROLE,
-                     required=True
-                 ),
-                 create_option(
-                     name="emoji",
-                     description="emoji that is used to assign the role",
-                     option_type=STRING,
-                     required=True
-                 )
-             ])
-async def add_reaction_role(ctx: SlashContext, role: str, emoji: str):
-    guild_id = str(ctx.guild_id)
+try:
+    @has_permissions(manage_roles=True)
+    @slash.slash(name="set_modlog", guild_ids=guild_ids, description="Sets channel that is used for logs",
+                 options=[
+                     create_option(
+                         name="channel",
+                         description="Channel",
+                         option_type=CHANNEL,
+                         required=True
+                     )
+                 ])
+    async def set_role_message(ctx: SlashContext, channel: discord.TextChannel):
+        guild_id = str(ctx.guild_id)
+        if not config.has_section(guild_id):
+            config.add_section(guild_id)
 
-    if not config.has_option(guild_id, "role_message"):
-        await ctx.send("Please define a role message first. Use set_role_message")
+        config.set(guild_id, "modlog", str(channel.id))
 
-    link = config.get(guild_id, "role_message").split('/')
-
-    channel_id = int(link[5])
-    msg_id = int(link[6])
-
-    channel = client.get_channel(channel_id)
-    msg = await channel.fetch_message(msg_id)
-
-    config.set(guild_id, str(emoji), str(role))
-    try:
-        with open('config.ini', 'w', encoding='utf-8') as f:
+        with open('config.ini', 'w', encoding="utf-8") as f:
             config.write(f)
-        await msg.add_reaction(emoji)
-        await ctx.send(f"Successfully added role {role}")
-    except discord.errors.HTTPException:
-        config.remove_option(guild_id, str(emoji))
-        with open('config.ini', 'w', encoding='utf-8') as f:
-            config.write(f)
-        await ctx.send("Error: Make sure you only use standard emojis or emojis from this server")
 
+        await ctx.channel.send(f"Successfully set {channel.mention} as modlog")
+
+except discord.ext.commands.errors.MissingPermissions:
+    pass
+
+try:
+    @has_permissions(manage_roles=True)
+    @slash.slash(name="add_reaction_role", guild_ids=None, description="Add emoji to assign roll",
+                 options=[
+                     create_option(
+                         name="role",
+                         description="role that should be assigned",
+                         option_type=ROLE,
+                         required=True
+                     ),
+                     create_option(
+                         name="emoji",
+                         description="emoji that is used to assign the role",
+                         option_type=STRING,
+                         required=True
+                     )
+                 ])
+    async def add_reaction_role(ctx: SlashContext, role: str, emoji: str):
+        guild_id = str(ctx.guild_id)
+
+        if not config.has_option(guild_id, "role_message"):
+            await ctx.send("Please define a role message first. Use set_role_message")
+
+        link = config.get(guild_id, "role_message").split('/')
+
+        channel_id = int(link[5])
+        msg_id = int(link[6])
+
+        channel = client.get_channel(channel_id)
+        msg = await channel.fetch_message(msg_id)
+
+        config.set(guild_id, str(emoji), str(role))
+        try:
+            with open('config.ini', 'w', encoding='utf-8') as f:
+                config.write(f)
+            await msg.add_reaction(emoji)
+            await ctx.send(f"Successfully added role \'{role}\'")
+        except discord.errors.HTTPException:
+            config.remove_option(guild_id, str(emoji))
+            with open('config.ini', 'w', encoding='utf-8') as f:
+                config.write(f)
+            await ctx.send("Error: Make sure you only use standard emojis or emojis from this server")
+except discord.ext.commands.errors.MissingPermissions:
+    pass
 
 client.run(TOKEN)
-logging.basicConfig()
