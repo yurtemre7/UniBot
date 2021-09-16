@@ -8,7 +8,7 @@ from discord.ext.commands import has_permissions
 from dotenv import load_dotenv
 
 from pytz import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import logging
 from configparser import ConfigParser
@@ -42,7 +42,7 @@ class MyClient(discord.Client):
 
     async def on_message(self, message: discord.Message):
 
-        logging.info(message.content)
+        logging.info(f"{message.author}: {message.content}")
 
         if message.author.id == client.user.id:
             return
@@ -50,17 +50,21 @@ class MyClient(discord.Client):
         if "plagiat" in message.content.lower():
             await message.add_reaction("🚨")
 
-    # Ctrl+C, Ctrl+V
+    # If multiple messages of the same target are deleted by the same person in a short time, only the first delete
+    # will get reported, as discord does not send a new audit log entry, only updates the old one
+    # could not find a timestamp for audit log updates, only for new entries
     async def on_message_delete(self, message: discord.Message):
         guild_id = str(message.guild.id)
+        logging.info(f"Delete {message.author}'s message: {message.content}")
         if (not message.author.bot) and config.has_option(guild_id, "modlog"):
             try:
                 async for entry in message.guild.audit_logs(limit=1, action=discord.AuditLogAction.message_delete):
                     author_can_delete_massages = message.author.permissions_in(message.channel).manage_messages
-                    timestamp = entry.created_at.now(timezone("Europe/Berlin")).replace(tzinfo=None)
+                    timestamp = entry.created_at
                     if author_can_delete_massages:
                         return
-                    if (datetime.now() - timestamp).total_seconds() < 1.0:  # Custom time function
+
+                    if (datetime.utcnow() - timestamp).total_seconds() < 1.0:
 
                         embed = discord.Embed(title="Message Deleted By Mod")
                         embed.add_field(name="Member: ", value=message.author.mention, inline=True)
@@ -84,6 +88,7 @@ class MyClient(discord.Client):
 
                         modlog_id = config.get(guild_id, "modlog")
                         modlog = await client.fetch_channel(modlog_id)
+                        logging.info("Sending message delete log")
                         await modlog.send(embed=embed)
 
             except discord.errors.Forbidden:
