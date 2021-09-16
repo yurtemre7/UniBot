@@ -21,7 +21,7 @@ config.read_file(codecs.open("config.ini", "r", "utf8"))
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 #   --- Option Types ---
 
@@ -41,6 +41,9 @@ class MyClient(discord.Client):
         print("Bot ist online!")
 
     async def on_message(self, message: discord.Message):
+
+        logging.info(message.content)
+
         if message.author.id == client.user.id:
             return
 
@@ -54,10 +57,11 @@ class MyClient(discord.Client):
             try:
                 async for entry in message.guild.audit_logs(limit=1, action=discord.AuditLogAction.message_delete):
                     author_can_delete_massages = message.author.permissions_in(message.channel).manage_messages
-                    timestamp = str(entry.created_at.now(timezone("Europe/Berlin"))).split("+")[0]
+                    timestamp = entry.created_at.now(timezone("Europe/Berlin")).replace(tzinfo=None)
                     if author_can_delete_massages:
                         return
-                    if timestamp == str(datetime.now()):  # Custom time function
+                    if (datetime.now() - timestamp).total_seconds() < 1.0:  # Custom time function
+
                         embed = discord.Embed(title="Message Deleted By Mod")
                         embed.add_field(name="Member: ", value=message.author.mention, inline=True)
                         embed.add_field(name="Mod: ", value=entry.user.mention, inline=True)
