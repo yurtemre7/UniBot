@@ -196,7 +196,7 @@ try:
                          required=True
                      )
                  ])
-    async def set_role_message(ctx: SlashContext, channel: discord.TextChannel):
+    async def set_modlog(ctx: SlashContext, channel: discord.TextChannel):
         guild_id = str(ctx.guild_id)
         if not config.has_section(guild_id):
             config.add_section(guild_id)
