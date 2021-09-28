@@ -6,7 +6,8 @@ from discord.ext.commands import Bot, Cog, has_permissions, errors
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-guild_ids = [817865198676738109, 831428691870744576]
+#guild_ids = [817865198676738109, 831428691870744576]
+guild_ids = [817865198676738109]
 
 #   --- Option Types ---
 

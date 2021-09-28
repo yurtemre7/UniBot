@@ -8,7 +8,8 @@ from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_commands import create_option
 from discord_slash.utils.manage_components import create_button, create_actionrow
 
-guild_ids = [817865198676738109, 831428691870744576]
+#guild_ids = [817865198676738109, 831428691870744576]
+guild_ids = [817865198676738109]
 
 #   --- Option Types ---
 

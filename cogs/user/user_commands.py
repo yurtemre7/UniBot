@@ -4,7 +4,8 @@ from configparser import ConfigParser
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
 
-guild_ids = [817865198676738109, 831428691870744576]
+#guild_ids = [817865198676738109, 831428691870744576]
+guild_ids = [817865198676738109]
 
 #   --- Option Types ---
 
