@@ -82,7 +82,8 @@ class RSS(Cog):
 
     try:
         @has_permissions(manage_roles=True)
-        @cog_ext.cog_slash(name="remove_rss_feed", guild_ids=guild_ids, description="Remove rss feed for this channel")
+        @cog_ext.cog_slash(name="remove_rss_feed", guild_ids=guild_ids, description="Remove rss feed for this channel",
+                           default_permission=False)
         async def remove_rss_feed(self, ctx: SlashContext):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -92,6 +93,15 @@ class RSS(Cog):
                     self.config.remove_option(guild_id, f"{channel_id}_hash")
                     if self.config.has_option(guild_id, f"{channel_id}_role"):
                         self.config.remove_option(guild_id, f"{channel_id}_role")
+
+                    rss_channels = self.config.get(guild_id, "rss_channels").split(",")
+                    rss_channels.remove(channel_id)
+                    rss_string = ""
+                    for channel in rss_channels[:-1]:
+                        rss_string += str(channel) + ","
+
+                    rss_string += rss_channels[-1]
+                    self.config.set(guild_id, "rss_channels", rss_string)
 
                     with open('config.ini', 'w', encoding="utf-8") as f:
                         self.config.write(f)
@@ -112,7 +122,7 @@ class RSS(Cog):
                     option_type=ROLE,
                     required=True
                 )
-            ])
+            ], default_permission=False)
         async def set_feed_ping(self, ctx: SlashContext, role: discord.role = None):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -129,7 +139,8 @@ class RSS(Cog):
 
     try:
         @has_permissions(manage_roles=True)
-        @cog_ext.cog_slash(name="remove_rss_role", guild_ids=guild_ids, description="Remove rss feed for this channel")
+        @cog_ext.cog_slash(name="remove_rss_role", guild_ids=guild_ids, description="Remove rss feed for this channel",
+                           default_permission=False)
         async def remove_rss_role(self, ctx: SlashContext):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -155,7 +166,7 @@ class RSS(Cog):
                                    option_type=BOOLEAN,
                                    required=False
                                )
-                           ])
+                           ], default_permission=False)
         async def load_rss(self, ctx: SlashContext, ping=False):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -169,6 +180,7 @@ class RSS(Cog):
             else:
                 role = None
 
+            await ctx.send("Manually loaded entry:", hidden=True)  # Prevents "Interaction failed" message
             await send_rss_entry(self, int(channel_id), self.config.get(guild_id, f"{channel_id}_link"), role=role)
 
     except discord.ext.commands.errors.MissingPermissions:
@@ -216,11 +228,14 @@ async def send_rss_entry(rss: RSS, channel_id: int, link: str, role: str = None)
     text_hash = hash(text)
     link = post.link
 
+    embed = discord.Embed(title=title)
+
     if len(text) > 1024:
         text = text[:1018] + "\n[...]"
 
-    embed = discord.Embed(title=title)
-    embed.add_field(name="Text:", value=text, inline=False)
+    if len(text) > 4:
+        embed.add_field(name="Text:", value=text, inline=False)
+
     embed.add_field(name="Link: ", value=link, inline=False)
 
     logging.info(f"New rss entry for channel {channel_id}")

@@ -86,7 +86,7 @@ class Roles(Cog):
             guild_id = str(ctx.guild_id)
 
             if not self.config.has_option(guild_id, "role_message"):
-                await ctx.send("Please define a role message first. Use set_role_message")
+                await ctx.send("Please define a role message first. Use set_role_message", hidden=True)
 
             link = self.config.get(guild_id, "role_message").split('/')
 
