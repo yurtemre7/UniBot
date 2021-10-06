@@ -82,8 +82,7 @@ class RSS(Cog):
 
     try:
         @has_permissions(manage_roles=True)
-        @cog_ext.cog_slash(name="remove_rss_feed", guild_ids=guild_ids, description="Remove rss feed for this channel",
-                           default_permission=False)
+        @cog_ext.cog_slash(name="remove_rss_feed", guild_ids=guild_ids, description="Remove rss feed for this channel")
         async def remove_rss_feed(self, ctx: SlashContext):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -122,7 +121,7 @@ class RSS(Cog):
                     option_type=ROLE,
                     required=True
                 )
-            ], default_permission=False)
+            ])
         async def set_feed_ping(self, ctx: SlashContext, role: discord.role = None):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -139,8 +138,7 @@ class RSS(Cog):
 
     try:
         @has_permissions(manage_roles=True)
-        @cog_ext.cog_slash(name="remove_rss_role", guild_ids=guild_ids, description="Remove rss feed for this channel",
-                           default_permission=False)
+        @cog_ext.cog_slash(name="remove_rss_role", guild_ids=guild_ids, description="Remove rss feed for this channel")
         async def remove_rss_role(self, ctx: SlashContext):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)
@@ -166,7 +164,7 @@ class RSS(Cog):
                                    option_type=BOOLEAN,
                                    required=False
                                )
-                           ], default_permission=False)
+                           ])
         async def load_rss(self, ctx: SlashContext, ping=False):
             guild_id = str(ctx.guild_id)
             channel_id = str(ctx.channel.id)

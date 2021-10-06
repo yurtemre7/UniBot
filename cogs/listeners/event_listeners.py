@@ -61,6 +61,7 @@ class Listen(Cog):
                             embed.add_field(name="Media: ", value=links, inline=False)
                             embed.set_image(url=message.attachments[0])
 
+                        self.config.read_file(codecs.open("config.ini", "r", "utf8"))   # Make sure data is up to date
                         modlog_id = self.config.get(guild_id, "modlog")
                         modlog = await self.bot.fetch_channel(modlog_id)
                         logging.info("Sending message delete log")
@@ -74,6 +75,8 @@ class Listen(Cog):
         if payload.user_id == self.bot.user.id:
             return
 
+        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+
         guild_id = str(payload.guild_id)
         channel_id = str(payload.channel_id)
         message_id = str(payload.message_id)
@@ -81,7 +84,8 @@ class Listen(Cog):
         emoji = str(payload.emoji)
         print(f"{link}: {emoji}")
         if self.config.has_option(guild_id, "role_message"):
-            if (self.config.get(guild_id, "role_message") == link) and (self.config.has_option(guild_id, emoji)):
+            role_link = self.config.get(guild_id, "role_message")   # Make sure data is up to date
+            if (role_link == link) and self.config.has_option(guild_id, emoji):
                 guild = self.bot.get_guild(int(guild_id))
                 role_string = self.config.get(guild_id, emoji)
                 role = discord.utils.get(guild.roles, name=role_string)

@@ -1,12 +1,12 @@
 import codecs
 import logging
-from configparser import ConfigParser, NoSectionError
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from discord.ext.commands import Bot, Cog, has_permissions, errors
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-#guild_ids = [817865198676738109, 831428691870744576]
+# guild_ids = [817865198676738109, 831428691870744576]
 guild_ids = [817865198676738109]
 
 #   --- Option Types ---
@@ -61,8 +61,8 @@ class Roles(Cog):
         try:
             await ctx.send(self.config.get(str(ctx.guild_id), "role_message"))
 
-        except NoSectionError:
-            await ctx.send("Not defined yet! Use 'set_role_message' first")
+        except (NoSectionError, NoOptionError):
+            await ctx.send("Not defined yet! Use 'set_role_message' first", hidden=True)
 
     #####   add_reaction_role   #####
     try:
@@ -100,6 +100,7 @@ class Roles(Cog):
             try:
                 with open('config.ini', 'w', encoding='utf-8') as f:
                     self.config.write(f)
+
                 await msg.add_reaction(emoji)
                 await ctx.send(f"Successfully added role \'{role}\'", hidden=True)
             except errors.HTTPException:
