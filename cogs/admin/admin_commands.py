@@ -28,28 +28,24 @@ class Admin(Cog):
 
     #   --- MODLOG ---
 
-    try:
-        @has_permissions(manage_roles=True)
-        @cog_ext.cog_slash(name="set_modlog", guild_ids=guild_ids, description="Sets channel that is used for logs",
-                           options=[
-                               create_option(
-                                   name="channel",
-                                   description="Channel",
-                                   option_type=CHANNEL,
-                                   required=True
-                               )
-                           ])
-        async def set_modlog(self, ctx: SlashContext, channel: discord.TextChannel):
-            guild_id = str(ctx.guild_id)
-            if not self.config.has_section(guild_id):
-                self.config.add_section(guild_id)
+    @has_permissions(manage_roles=True)
+    @cog_ext.cog_slash(name="set_modlog", guild_ids=guild_ids, description="Sets channel that is used for logs",
+                       options=[
+                           create_option(
+                               name="channel",
+                               description="Channel",
+                               option_type=CHANNEL,
+                               required=True
+                           )
+                       ])
+    async def set_modlog(self, ctx: SlashContext, channel: discord.TextChannel):
+        guild_id = str(ctx.guild_id)
+        if not self.config.has_section(guild_id):
+            self.config.add_section(guild_id)
 
-            self.config.set(guild_id, "modlog", str(channel.id))
+        self.config.set(guild_id, "modlog", str(channel.id))
 
-            with open('config.ini', 'w', encoding="utf-8") as f:
-                self.config.write(f)
+        with open('config.ini', 'w', encoding="utf-8") as f:
+            self.config.write(f)
 
-            await ctx.channel.send(f"Successfully set {channel.mention} as modlog", hidden=True)
-
-    except discord.ext.commands.errors.MissingPermissions:
-        pass
+        await ctx.channel.send(f"Successfully set {channel.mention} as modlog", hidden=True)
