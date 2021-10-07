@@ -136,7 +136,7 @@ class RSS(Cog):
                 with open('config.ini', 'w', encoding="utf-8") as f:
                     self.config.write(f)
                 logging.info(f"Removed rss role for channel {channel_id}")
-                await ctx.send(f"No role will be notified on new rss entries", hidden=True)
+                await ctx.send("No role will be notified on new rss entries", hidden=True)
                 return
         await ctx.send("No rss feed had been setup", hidden=True)
 
