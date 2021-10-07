@@ -1,10 +1,8 @@
 import codecs
 from configparser import ConfigParser
-import codecs
 import logging
 import feedparser
 import html2text
-from configparser import ConfigParser
 
 import discord
 from discord.ext import tasks
