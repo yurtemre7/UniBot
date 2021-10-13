@@ -61,7 +61,7 @@ class Listen(Cog):
                             embed.add_field(name="Media: ", value=links, inline=False)
                             embed.set_image(url=message.attachments[0])
 
-                        self.config.read_file(codecs.open("config.ini", "r", "utf8"))   # Make sure data is up to date
+                        self.config.read_file(codecs.open("config.ini", "r", "utf8"))  # Make sure data is up to date
                         modlog_id = self.config.get(guild_id, "modlog")
                         modlog = await self.bot.fetch_channel(modlog_id)
                         logging.info("Sending message delete log")
@@ -75,37 +75,34 @@ class Listen(Cog):
         if payload.user_id == self.bot.user.id:
             return
 
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+        self.config.read_file(codecs.open("config.ini", "r", "utf8"))  # Make sure data is up to date
 
         guild_id = str(payload.guild_id)
         channel_id = str(payload.channel_id)
         message_id = str(payload.message_id)
-        link = f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
         emoji = str(payload.emoji)
-        print(f"{link}: {emoji}")
-        if self.config.has_option(guild_id, "role_message"):
-            role_link = self.config.get(guild_id, "role_message")   # Make sure data is up to date
-            if (role_link == link) and self.config.has_option(guild_id, emoji):
-                guild = self.bot.get_guild(int(guild_id))
-                role_string = self.config.get(guild_id, emoji)
-                role = discord.utils.get(guild.roles, name=role_string)
-                member = await guild.fetch_member(payload.user_id)
 
-                await member.add_roles(role)
+        if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
+            guild = self.bot.get_guild(int(guild_id))
+            role_string = self.config.get(guild_id, f"{message_id}_{emoji}")
+            role = discord.utils.get(guild.roles, name=role_string)
+            member = await guild.fetch_member(payload.user_id)
+
+            await member.add_roles(role)
 
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
         guild_id = str(payload.guild_id)
         channel_id = str(payload.channel_id)
         message_id = str(payload.message_id)
-        link = f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
         emoji = str(payload.emoji)
 
-        if self.config.has_option(guild_id, "role_message"):
-            if (self.config.get(guild_id, "role_message") == link) and (self.config.has_option(guild_id, emoji)):
-                guild = self.bot.get_guild(int(guild_id))
-                role_string = self.config.get(guild_id, emoji)
-                role = discord.utils.get(guild.roles, name=role_string)
-                member = await guild.fetch_member(payload.user_id)
+        self.config.read_file(codecs.open("config.ini", "r", "utf8"))  # Make sure data is up to date
 
-                await member.remove_roles(role)
+        if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
+            guild = self.bot.get_guild(int(guild_id))
+            role_string = self.config.get(guild_id, f"{message_id}_{emoji}")
+            role = discord.utils.get(guild.roles, name=role_string)
+            member = await guild.fetch_member(payload.user_id)
+
+            await member.remove_roles(role)

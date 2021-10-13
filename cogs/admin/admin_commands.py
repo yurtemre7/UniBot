@@ -2,7 +2,7 @@ import codecs
 from configparser import ConfigParser
 
 import discord
-from discord.ext.commands import Bot, Cog, has_permissions
+from discord.ext.commands import Bot, Cog, has_guild_permissions
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
@@ -28,7 +28,7 @@ class Admin(Cog):
 
     #   --- MODLOG ---
 
-    @has_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="set_modlog", guild_ids=guild_ids, description="Sets channel that is used for logs",
                        options=[
                            create_option(
@@ -48,4 +48,4 @@ class Admin(Cog):
         with open('config.ini', 'w', encoding="utf-8") as f:
             self.config.write(f)
 
-        await ctx.channel.send(f"Successfully set {channel.mention} as modlog", hidden=True)
+        await ctx.send(f"Successfully set {channel.mention} as modlog", hidden=True)

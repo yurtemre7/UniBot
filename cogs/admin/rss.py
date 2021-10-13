@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 import discord
 from discord.ext import tasks
-from discord.ext.commands import Bot, Cog, has_permissions
+from discord.ext.commands import Bot, Cog, has_guild_permissions
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
@@ -36,7 +36,7 @@ class RSS(Cog):
     def cog_unload(self):
         self.check_feeds.cancel()
 
-    @has_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="add_rss_feed", guild_ids=guild_ids, description="Setup a rss feed for this channel",
                        options=[
                            create_option(
@@ -77,7 +77,7 @@ class RSS(Cog):
             logging.info(f"{guild_id}: Added rss feed for channel {channel_id}")
         await ctx.send("Added new rss feed.", hidden=True)
 
-    @has_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="remove_rss_feed", guild_ids=guild_ids, description="Remove rss feed for this channel")
     async def remove_rss_feed(self, ctx: SlashContext):
         guild_id = str(ctx.guild_id)
@@ -105,7 +105,7 @@ class RSS(Cog):
         else:
             await ctx.send("No rss feed had been setup", hidden=True)
 
-    @has_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="set_rss_role", guild_ids=guild_ids,
                        description="Set role that will be notified on new rss entries", options=[
             create_option(
@@ -127,7 +127,7 @@ class RSS(Cog):
         else:
             await ctx.send("No rss feed had been setup", hidden=True)
 
-    @has_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="remove_rss_role", guild_ids=guild_ids, description="Remove rss feed for this channel")
     async def remove_rss_role(self, ctx: SlashContext):
         guild_id = str(ctx.guild_id)
@@ -142,7 +142,7 @@ class RSS(Cog):
                 return
         await ctx.send("No rss feed had been setup", hidden=True)
 
-    @has_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="load_rss", guild_ids=guild_ids, description="Load newest rss entry",
                        options=[
                            create_option(

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from configparser import ConfigParser
 
 import discord
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, CommandError, Context
 from discord_slash import SlashCommand
 
 #   --- Config ---
