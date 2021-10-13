@@ -1,10 +1,8 @@
 import codecs
 from configparser import ConfigParser
-import codecs
 import logging
 import feedparser
 import html2text
-from configparser import ConfigParser
 
 import discord
 from discord.ext import tasks
@@ -138,7 +136,7 @@ class RSS(Cog):
                 with open('config.ini', 'w', encoding="utf-8") as f:
                     self.config.write(f)
                 logging.info(f"Removed rss role for channel {channel_id}")
-                await ctx.send(f"No role will be notified on new rss entries", hidden=True)
+                await ctx.send("No role will be notified on new rss entries", hidden=True)
                 return
         await ctx.send("No rss feed had been setup", hidden=True)
 
