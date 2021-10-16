@@ -90,10 +90,17 @@ class RSS(Cog):
                 rss_channels = self.config.get(guild_id, "rss_channels").split(",")
                 rss_channels.remove(channel_id)
                 rss_string = ""
-                for channel in rss_channels[:-1]:
-                    rss_string += str(channel) + ","
 
-                rss_string += rss_channels[-1]
+                if len(rss_channels) == 0:
+                    rss_string = ""
+                elif len(rss_channels) == 1:
+                    rss_string = str(rss_channels[0])
+                else:
+                    for channel in rss_channels[:-1]:
+                        rss_string += str(channel) + ","
+
+                    rss_string += rss_channels[-1]
+
                 self.config.set(guild_id, "rss_channels", rss_string)
 
                 with open('config.ini', 'w', encoding="utf-8") as f:
@@ -106,14 +113,14 @@ class RSS(Cog):
     @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="set_rss_role", guild_ids=guild_ids,
                        description="Set role that will be notified on new rss entries", options=[
-            create_option(
-                name="role",
-                description="role to ping on rss update",
-                option_type=ROLE,
-                required=True
-            )
-        ])
-    async def set_feed_ping(self, ctx: SlashContext, role: discord.role = None):
+                        create_option(
+                            name="role",
+                            description="role to ping on rss update",
+                            option_type=ROLE,
+                            required=True
+                        )
+                        ])
+    async def set_rss_role(self, ctx: SlashContext, role: discord.role = None):
         guild_id = str(ctx.guild_id)
         channel_id = str(ctx.channel.id)
         if self.config.has_section(guild_id):
