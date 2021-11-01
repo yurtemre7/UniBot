@@ -70,6 +70,7 @@ class Roles(Cog):
             try:
                 with open('config.ini', 'w', encoding='utf-8') as f:
                     self.config.write(f)
+                    logging.info(f"Added reaction role '{role}' to message {msg_id}")
 
                 await msg.add_reaction(emoji)
                 await ctx.send(f"Successfully added role \'{role}\'", hidden=True)

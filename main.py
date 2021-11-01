@@ -16,7 +16,7 @@ config.read_file(codecs.open("config.ini", "r", "utf8"))
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d.%m.%Y %H:%M:%S")
 
 
 class UniBot(Bot):
@@ -39,6 +39,7 @@ class UniBot(Bot):
         self.reload_extension("cogs.user")
 
         print("Ready")
+        logging.info("Startup")
 
 
 def main():

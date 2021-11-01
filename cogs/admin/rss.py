@@ -183,6 +183,9 @@ class RSS(Cog):
                     logging.info("Checking rss feed for channel " + str(channel_id))
                     link = self.config.get(guild_id, f"{channel_id}_link")
                     d = feedparser.parse(link)
+                    if not d.entries or len(d.entries) == 0:
+                        logging.error("No rss entries found for link " + link)
+                        continue
                     post = d.entries[0]
                     html = (post.summary.encode('utf-8', 'ignore').decode('utf-8'))
                     text = html2text.html2text(html)
