@@ -1,20 +1,25 @@
-import os
 import codecs
 import logging
-from dotenv import load_dotenv
 from configparser import ConfigParser
 
 import discord
 from discord.ext.commands import Bot, CommandError, Context
 from discord_slash import SlashCommand
 
+from util.config import Config
+
 #   --- Config ---
 
-config = ConfigParser(delimiters="=")
-config.read_file(codecs.open("config.ini", "r", "utf8"))
+TOKEN = Config.get_token()
+DATA_DIR = Config.get_data_dir()
 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+config = ConfigParser(delimiters="=")
+try:
+    config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
+except FileNotFoundError:
+    fp = open(Config.get_file(), 'x')
+    fp.close()
+    config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d.%m.%Y %H:%M:%S")
 

@@ -6,8 +6,9 @@ from discord.ext.commands import Bot, Cog, has_guild_permissions
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-# guild_ids = [817865198676738109, 831428691870744576]
-guild_ids = [817865198676738109]
+from util.config import Config
+guild_ids = Config.get_guild_ids()
+
 
 #   --- Option Types ---
 
@@ -24,7 +25,7 @@ class Admin(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.config = ConfigParser(delimiters="=")
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
     #   --- MODLOG ---
 
@@ -45,7 +46,7 @@ class Admin(Cog):
 
         self.config.set(guild_id, "modlog", str(channel.id))
 
-        with open('config.ini', 'w', encoding="utf-8") as f:
+        with open(Config.get_file(), 'w', encoding="utf-8") as f:
             self.config.write(f)
 
         await ctx.send(f"Successfully set {channel.mention} as modlog", hidden=True)

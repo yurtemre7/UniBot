@@ -6,8 +6,9 @@ from discord.ext.commands import Bot, Cog, has_guild_permissions, errors
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-# guild_ids = [817865198676738109, 831428691870744576]
-guild_ids = [817865198676738109]
+from util.config import Config
+guild_ids = Config.get_guild_ids()
+
 
 #   --- Option Types ---
 
@@ -24,7 +25,7 @@ class Roles(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.config = ConfigParser(delimiters="=")
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
     #
     # add_reaction_role
@@ -68,7 +69,7 @@ class Roles(Cog):
 
             self.config.set(guild_id, f"{msg_id}_{emoji}", str(role))
             try:
-                with open('config.ini', 'w', encoding='utf-8') as f:
+                with open(Config.get_file(), 'w', encoding='utf-8') as f:
                     self.config.write(f)
                     logging.info(f"Added reaction role '{role}' to message {msg_id}")
 
@@ -76,7 +77,7 @@ class Roles(Cog):
                 await ctx.send(f"Successfully added role \'{role}\'", hidden=True)
             except errors.HTTPException:
                 self.config.remove_option(guild_id, str(emoji))
-                with open('config.ini', 'w', encoding='utf-8') as f:
+                with open(Config.get_file(), 'w', encoding='utf-8') as f:
                     self.config.write(f)
                 await ctx.send("Error: Make sure you only use standard emojis or emojis from this server", hidden=True)
         else:
@@ -118,7 +119,7 @@ class Roles(Cog):
                 return
 
             self.config.remove_option(guild_id, f"{msg_id}_{emoji}")
-            with open('config.ini', 'w', encoding='utf-8') as f:
+            with open(Config.get_file(), 'w', encoding='utf-8') as f:
                 self.config.write(f)
 
             await msg.clear_reaction(emoji)

@@ -10,8 +10,8 @@ from discord.ext.commands import Bot, Cog, has_guild_permissions
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
-# guild_ids = [817865198676738109, 831428691870744576]
-guild_ids = [817865198676738109]
+from util.config import Config
+guild_ids = Config.get_guild_ids()
 
 #   --- Option Types ---
 
@@ -28,7 +28,7 @@ class RSS(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.config = ConfigParser(delimiters="=")
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
         self.check_feeds.start()
 
     def cog_unload(self):
@@ -70,7 +70,7 @@ class RSS(Cog):
         if role:
             self.config.set(guild_id, f"{channel_id}_role", role.name)
 
-        with open('config.ini', 'w', encoding="utf-8") as f:
+        with open(Config.get_file(), 'w', encoding="utf-8") as f:
             self.config.write(f)
             logging.info(f"{guild_id}: Added rss feed for channel {channel_id}")
         await ctx.send("Added new rss feed.", hidden=True)
@@ -103,7 +103,7 @@ class RSS(Cog):
 
                 self.config.set(guild_id, "rss_channels", rss_string)
 
-                with open('config.ini', 'w', encoding="utf-8") as f:
+                with open(Config.get_file(), 'w', encoding="utf-8") as f:
                     self.config.write(f)
                 logging.info("Removed rss feed for channel " + channel_id)
                 await ctx.send("Removed rss feed for this channel", hidden=True)
@@ -125,7 +125,7 @@ class RSS(Cog):
         channel_id = str(ctx.channel.id)
         if self.config.has_section(guild_id):
             self.config.set(guild_id, f"{channel_id}_role", role.name)
-            with open('config.ini', 'w', encoding="utf-8") as f:
+            with open(Config.get_file(), 'w', encoding="utf-8") as f:
                 self.config.write(f)
             logging.info(f"Set role {role.name} as rss role for channel {channel_id}")
             await ctx.send(f"Role {role.name} will be notified on new rss entries", hidden=True)
@@ -140,7 +140,7 @@ class RSS(Cog):
         if self.config.has_section(guild_id):
             if self.config.has_option(guild_id, f"{channel_id}_role"):
                 self.config.remove_option(guild_id, f"{channel_id}_role")
-                with open('config.ini', 'w', encoding="utf-8") as f:
+                with open(Config.get_file(), 'w', encoding="utf-8") as f:
                     self.config.write(f)
                 logging.info(f"Removed rss role for channel {channel_id}")
                 await ctx.send("No role will be notified on new rss entries", hidden=True)
@@ -230,7 +230,7 @@ async def send_rss_entry(rss: RSS, channel_id: int, link: str, role: str = None)
 
     logging.info(f"New rss entry for channel {channel_id}")
     rss.config.set(str(guild_id), f"{channel_id}_hash", str(text_hash))
-    with open('config.ini', 'w', encoding="utf-8") as f:
+    with open(Config.get_file(), 'w', encoding="utf-8") as f:
         rss.config.write(f)
         logging.info(f"{guild_id}: Updated rss hash for channel {channel_id}")
     if role:

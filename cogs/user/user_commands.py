@@ -4,8 +4,8 @@ from configparser import ConfigParser
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
 
-#guild_ids = [817865198676738109, 831428691870744576]
-guild_ids = [817865198676738109]
+from util.config import Config
+guild_ids = Config.get_guild_ids()
 
 #   --- Option Types ---
 
@@ -22,7 +22,7 @@ class User(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.config = ConfigParser(delimiters="=")
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
     @cog_ext.cog_slash(name="ping", guild_ids=guild_ids, description="Pong!")
     async def ping(self, ctx: SlashContext):

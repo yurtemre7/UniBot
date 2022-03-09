@@ -6,12 +6,14 @@ from datetime import datetime
 import discord
 from discord.ext.commands import Bot, Cog
 
+from util.config import Config
+
 
 class Listen(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.config = ConfigParser(delimiters="=")
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -61,7 +63,8 @@ class Listen(Cog):
                             embed.add_field(name="Media: ", value=links, inline=False)
                             embed.set_image(url=message.attachments[0])
 
-                        self.config.read_file(codecs.open("config.ini", "r", "utf8"))  # Make sure data is up to date
+                        self.config.read_file(
+                            codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
                         modlog_id = self.config.get(guild_id, "modlog")
                         modlog = await self.bot.fetch_channel(modlog_id)
                         logging.info("Sending message delete log")
@@ -75,7 +78,7 @@ class Listen(Cog):
         if payload.user_id == self.bot.user.id:
             return
 
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))  # Make sure data is up to date
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
 
         guild_id = str(payload.guild_id)
         channel_id = str(payload.channel_id)
@@ -97,7 +100,7 @@ class Listen(Cog):
         message_id = str(payload.message_id)
         emoji = str(payload.emoji)
 
-        self.config.read_file(codecs.open("config.ini", "r", "utf8"))  # Make sure data is up to date
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
 
         if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
             guild = self.bot.get_guild(int(guild_id))
