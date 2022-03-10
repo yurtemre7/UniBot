@@ -23,7 +23,8 @@ class TUB(Cog):
         try:
             r_isis = requests.get("https://isis.tu-berlin.de/")
             isis_status = r_isis.status_code
-            r_shibboleth = requests.get("https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1")
+            r_shibboleth = requests.get(
+                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1")
             shibboleth_status = r_shibboleth.status_code
             error_message = None
         except Exception as e:
@@ -50,7 +51,7 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         try:
-            r_autolab = requests.get("https://autolab.tu-berlin.de/")
+            r_autolab = requests.get("https://autolab.service.tu-berlin.de/")
             autolab_status = r_autolab.status_code
             error_message = None
         except Exception as e:
@@ -61,6 +62,7 @@ class TUB(Cog):
             embed.add_field(name="Error", value=f"{error_message}", inline=False)
             await ctx.send(embed=embed, hidden=True)
         else:
-            embed = discord.Embed(title="Autolab Server Status", color=0x00ff00, url="https://autolab.tu-berlin.de/")
+            embed = discord.Embed(title="Autolab Server Status", color=0x00ff00,
+                                  url="https://autolab.service.tu-berlin.de/")
             embed.add_field(name="Autolab", value=f"{autolab_status}", inline=True)
             await ctx.send(embed=embed, hidden=True)
