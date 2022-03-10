@@ -1,6 +1,4 @@
-FROM alpine:latest
-
-RUN apk add python3-dev py3-pip gcc musl-dev
+FROM python:3.10-slim
 
 ADD main.py requirements.txt .env /bot/
 ADD cogs/ /bot/cogs/

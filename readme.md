@@ -27,7 +27,7 @@ A Discord bot intended for the use on student-run university severs.
  - [ ] Check if link points to valid RSS feed before adding it 
 
 ### Useful
- - [ ] Equivalent to [isISIS.online](https://isisis.online/)
+ - [x] Equivalent to [isISIS.online](https://isisis.online/)
 
 ## Known Issues
  * If an admin deletes multiple messages of the same user, only the first one will be logged
