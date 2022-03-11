@@ -1,6 +1,6 @@
 import codecs
 import logging
-from configparser import ConfigParser, NoSectionError, NoOptionError
+from configparser import ConfigParser
 
 from discord.ext.commands import Bot, Cog, has_guild_permissions, errors
 from discord_slash import SlashContext, cog_ext
