@@ -19,20 +19,30 @@ class TUB(Cog):
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
     @cog_ext.cog_slash(name="isis", guild_ids=guild_ids, description="Get ISIS server status")
-    async def isis(self, ctx: SlashContext):
+    async def isis(self, ctx):
+        error_message_isis = None
+        error_message_shibboleth = None
         try:
             r_isis = requests.get("https://isis.tu-berlin.de/")
             isis_status = r_isis.status_code
+        except Exception as e:
+            error_message_isis = f"Error: {e}"
+
+        try:
             r_shibboleth = requests.get(
                 "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1")
             shibboleth_status = r_shibboleth.status_code
-            error_message = None
         except Exception as e:
-            error_message = f"Error: {e}"
+            error_message_shibboleth = f"Error: {e}"
 
-        if error_message:
-            embed = discord.Embed(title="ISIS Server Status", color=0xff0000, url="https://isisis.online")
-            embed.add_field(name="Error", value=f"{error_message}", inline=False)
+        if error_message_isis or error_message_shibboleth:
+            if error_message_isis and error_message_shibboleth:
+                color = 0xff0000
+            else:
+                color = 0xFFAD00
+            embed = discord.Embed(title="ISIS Server Status", color=color, url="https://isisis.online")
+            embed.add_field(name="ISIS", value=f"{error_message_isis}", inline=False)
+            embed.add_field(name="Shibboleth", value=f"{error_message_shibboleth}", inline=False)
             await ctx.send(embed=embed, hidden=True)
         else:
             match (isis_status, shibboleth_status):
