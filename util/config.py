@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import logging
 
 
 class Config:
@@ -11,7 +12,7 @@ class Config:
     @classmethod
     def get_data_dir(cls):
         load_dotenv()
-        return os.getenv('DATA_DIR', './data/')
+        return os.getenv('DATA_DIR', './data') + '/'
 
     @classmethod
     def get_file(cls):
@@ -20,5 +21,9 @@ class Config:
 
     @classmethod
     def get_guild_ids(cls):
+        """
+        Returns a list of guild ids to sync commands with. If 'None', commands will be globally synced.
+        """
         # return [817865198676738109, 831428691870744576]
-        return [817865198676738109]
+        # return [817865198676738109]
+        return None
