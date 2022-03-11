@@ -1,5 +1,4 @@
 import codecs
-import logging
 from configparser import ConfigParser
 
 import discord

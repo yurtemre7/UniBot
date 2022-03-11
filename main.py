@@ -3,7 +3,7 @@ import logging
 from configparser import ConfigParser
 
 import discord
-from discord.ext.commands import Bot, CommandError, Context
+from discord.ext.commands import Bot
 from discord_slash import SlashCommand
 
 from util.config import Config

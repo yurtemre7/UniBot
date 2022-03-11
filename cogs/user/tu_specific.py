@@ -5,7 +5,6 @@ import requests
 from configparser import ConfigParser
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
-from discord_slash.utils.manage_commands import create_option
 
 from util.config import Config
 
