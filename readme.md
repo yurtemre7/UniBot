@@ -13,14 +13,14 @@ A Discord bot intended for the use on student-run university severs.
 
 ## Wanted Features
 ### General
- - [ ] Sync commands with all servers, get rid of hard coded server ids
+ - [x] Sync commands with all servers, get rid of hard coded server ids
  - [ ] Only show commands to eligible users
- - [ ] Ship bot in docker container
+ - [x] Ship bot in docker container
 ### Moderation
  - [ ] Extent logging of mod activities
 	- [ ] Removal of reactions
 	- [ ] Kicks
-	- [ ] Bans
+	- [x] Bans
 	- [ ] Timeouts
 	- [ ] Voice channel mutes
  - [ ] Log certain users deleting their own messages
