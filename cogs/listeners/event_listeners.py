@@ -15,6 +15,7 @@ class Listen(Cog):
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
+    # Fun
     @Cog.listener()
     async def on_message(self, message: discord.Message):
 
@@ -25,6 +26,27 @@ class Listen(Cog):
 
         if "plagiat" in message.content.lower():
             await message.add_reaction("🚨")
+
+    # Reaction Roles
+    @Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if payload.user_id == self.bot.user.id:
+            return
+
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
+
+        guild_id = str(payload.guild_id)
+        channel_id = str(payload.channel_id)
+        message_id = str(payload.message_id)
+        emoji = str(payload.emoji)
+
+        if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
+            guild = self.bot.get_guild(int(guild_id))
+            role_string = self.config.get(guild_id, f"{message_id}_{emoji}")
+            role = discord.utils.get(guild.roles, name=role_string)
+            member = await guild.fetch_member(payload.user_id)
+
+            await member.add_roles(role)
 
     # If multiple messages of the same target are deleted by the same person in a short time, only the first delete
     # will get reported, as discord does not send a new audit log entry, only updates the old one
@@ -74,38 +96,42 @@ class Listen(Cog):
                 logging.warning("Missing permissions for logging message deletion")
 
     @Cog.listener()
-    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        if payload.user_id == self.bot.user.id:
-            return
+    async def on_member_ban(self, guild: discord.Guild, user: discord.User):
+        guild_id = str(guild.id)
+        if self.config.has_option(guild_id, "modlog"):
+            try:
+                async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.ban):
+                    logging.info(entry)
+                    embed = discord.Embed(title="Member Banned", color=discord.Color.red())
+                    embed.add_field(name="Member: ", value=user.mention, inline=True)
+                    embed.add_field(name="Mod: ", value=entry.user.mention, inline=True)
 
-        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
+                    self.config.read_file(
+                        codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
+                    modlog_id = self.config.get(guild_id, "modlog")
+                    modlog = await self.bot.fetch_channel(modlog_id)
+                    logging.info("Sending member ban log")
+                    await modlog.send(embed=embed)
 
-        guild_id = str(payload.guild_id)
-        channel_id = str(payload.channel_id)
-        message_id = str(payload.message_id)
-        emoji = str(payload.emoji)
-
-        if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
-            guild = self.bot.get_guild(int(guild_id))
-            role_string = self.config.get(guild_id, f"{message_id}_{emoji}")
-            role = discord.utils.get(guild.roles, name=role_string)
-            member = await guild.fetch_member(payload.user_id)
-
-            await member.add_roles(role)
+            except discord.errors.Forbidden:
+                logging.warning("Missing permissions for logging member ban")
 
     @Cog.listener()
-    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        guild_id = str(payload.guild_id)
-        channel_id = str(payload.channel_id)
-        message_id = str(payload.message_id)
-        emoji = str(payload.emoji)
+    async def on_member_unban(self, guild: discord.Guild, user: discord.User):
+        guild_id = str(guild.id)
+        if self.config.has_option(guild_id, "modlog"):
+            try:
+                async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.unban):
+                    embed = discord.Embed(title="Member Unbanned", color=discord.Color.red())
+                    embed.add_field(name="Member: ", value=user.mention, inline=True)
+                    embed.add_field(name="Mod: ", value=entry.user.mention, inline=True)
 
-        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
+                    self.config.read_file(
+                        codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
+                    modlog_id = self.config.get(guild_id, "modlog")
+                    modlog = await self.bot.fetch_channel(modlog_id)
+                    logging.info("Sending member unban log")
+                    await modlog.send(embed=embed)
 
-        if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
-            guild = self.bot.get_guild(int(guild_id))
-            role_string = self.config.get(guild_id, f"{message_id}_{emoji}")
-            role = discord.utils.get(guild.roles, name=role_string)
-            member = await guild.fetch_member(payload.user_id)
-
-            await member.remove_roles(role)
+            except discord.errors.Forbidden:
+                logging.warning("Missing permissions for logging member unban")
