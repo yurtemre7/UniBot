@@ -1,6 +1,6 @@
 import codecs
 import logging
-from configparser import ConfigParser, NoSectionError, NoOptionError
+from configparser import ConfigParser
 
 from discord.ext.commands import Bot, Cog, has_guild_permissions, errors
 from discord_slash import SlashContext, cog_ext
@@ -27,9 +27,6 @@ class Roles(Cog):
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
-    #
-    # add_reaction_role
-    #
     @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="add_reaction_role", guild_ids=guild_ids, description="Add emoji to assign roll",
                        options=[
@@ -83,9 +80,6 @@ class Roles(Cog):
         else:
             await ctx.send("Error: Make sure you've got the right link", hidden=True)
 
-    #
-    # remove_reaction_role
-    #
     @has_guild_permissions(manage_roles=True)
     @cog_ext.cog_slash(name="remove_reaction_role", guild_ids=guild_ids, description="Add emoji to assign roll",
                        options=[
