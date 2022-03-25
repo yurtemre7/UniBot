@@ -48,6 +48,24 @@ class Listen(Cog):
 
             await member.add_roles(role)
 
+    # Reaction Roles
+    @Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        guild_id = str(payload.guild_id)
+        channel_id = str(payload.channel_id)
+        message_id = str(payload.message_id)
+        emoji = str(payload.emoji)
+
+        self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
+
+        if self.config.has_option(guild_id, f"{message_id}_{emoji}"):
+            guild = self.bot.get_guild(int(guild_id))
+            role_string = self.config.get(guild_id, f"{message_id}_{emoji}")
+            role = discord.utils.get(guild.roles, name=role_string)
+            member = await guild.fetch_member(payload.user_id)
+
+            await member.remove_roles(role)
+
     # If multiple messages of the same target are deleted by the same person in a short time, only the first delete
     # will get reported, as discord does not send a new audit log entry, only updates the old one
     # could not find a timestamp for audit log updates, only for new entries
