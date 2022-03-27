@@ -23,7 +23,7 @@ A Discord bot intended for the use on student-run university severs.
 	- [x] Bans
 	- [ ] Timeouts
 	- [ ] Voice channel mutes
- - [ ] Log certain users deleting their own messages
+ - [x] Log certain users deleting their own messages
  - [ ] Check if link points to valid RSS feed before adding it 
 
 ### Useful

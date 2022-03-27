@@ -1,3 +1,4 @@
+import json
 import codecs
 import logging
 from configparser import ConfigParser
@@ -72,16 +73,16 @@ class Listen(Cog):
     @Cog.listener()
     async def on_message_delete(self, message: discord.Message):
         guild_id = str(message.guild.id)
+
+        # Log messages deleted by mods
         logging.info(f"Delete {message.author}'s message: {message.content}")
         if (not message.author.bot) and self.config.has_option(guild_id, "modlog"):
             try:
                 async for entry in message.guild.audit_logs(limit=1, action=discord.AuditLogAction.message_delete):
                     author_can_delete_massages = message.author.permissions_in(message.channel).manage_messages
                     timestamp = entry.created_at
-                    if author_can_delete_massages:
-                        return
 
-                    if (datetime.utcnow() - timestamp).total_seconds() < 1.0:
+                    if (datetime.utcnow() - timestamp).total_seconds() < 1.0 and not author_can_delete_massages:
 
                         embed = discord.Embed(title="Message Deleted By Mod")
                         embed.add_field(name="Member: ", value=message.author.mention, inline=True)
@@ -109,9 +110,20 @@ class Listen(Cog):
                         modlog = await self.bot.fetch_channel(modlog_id)
                         logging.info("Sending message delete log")
                         await modlog.send(embed=embed)
+                        return
 
             except discord.errors.Forbidden:
                 logging.warning("Missing permissions for logging message deletion")
+
+        # Watch Users
+        watched_users = json.loads(self.config.get(guild_id, "watched_users", fallback="[]"))
+        watched_dict = json.loads(self.config.get(guild_id, "watched_dict", fallback="{}"))
+        if message.author.id in watched_users:
+            channel = await self.bot.fetch_channel(watched_dict[str(message.author.id)])
+            embed = discord.Embed(description=message.content, type="rich")
+            embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+            embed.set_footer(text=f"#{message.channel.name}")
+            await channel.send(embed=embed)
 
     @Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):

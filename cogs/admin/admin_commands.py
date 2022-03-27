@@ -7,8 +7,8 @@ from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
 from util.config import Config
-guild_ids = Config.get_guild_ids()
 
+guild_ids = Config.get_guild_ids()
 
 #   --- Option Types ---
 
@@ -60,3 +60,4 @@ class Admin(Cog):
             channel_id = self.config.get(guild_id, "modlog")
             channel = ctx.guild.get_channel(int(channel_id))
             await ctx.send(f"Modlog is set to {channel.mention}", hidden=True)
+
