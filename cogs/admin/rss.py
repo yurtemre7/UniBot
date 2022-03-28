@@ -55,7 +55,7 @@ class RSS(Cog):
         channel_id = str(ctx.channel.id)
 
         if not self.config.has_section(guild_id):
-            self.config.add_section(str(guild_id))
+            self.config.add_section(guild_id)
 
         if not self.config.has_option(guild_id, "rss_channels"):
             self.config.set(guild_id, "rss_channels", channel_id)
@@ -97,7 +97,7 @@ class RSS(Cog):
                     rss_string = str(rss_channels[0])
                 else:
                     for channel in rss_channels[:-1]:
-                        rss_string += str(channel) + ","
+                        rss_string += f'{str(channel)},'
 
                     rss_string += rss_channels[-1]
 
@@ -105,7 +105,7 @@ class RSS(Cog):
 
                 with open(Config.get_file(), 'w', encoding="utf-8") as f:
                     self.config.write(f)
-                logging.info("Removed rss feed for channel " + channel_id)
+                logging.info(f"Removed rss feed for channel {channel_id}")
                 await ctx.send("Removed rss feed for this channel", hidden=True)
         else:
             await ctx.send("No rss feed had been setup", hidden=True)
@@ -137,14 +137,15 @@ class RSS(Cog):
     async def remove_rss_role(self, ctx: SlashContext):
         guild_id = str(ctx.guild_id)
         channel_id = str(ctx.channel.id)
-        if self.config.has_section(guild_id):
-            if self.config.has_option(guild_id, f"{channel_id}_role"):
-                self.config.remove_option(guild_id, f"{channel_id}_role")
-                with open(Config.get_file(), 'w', encoding="utf-8") as f:
-                    self.config.write(f)
-                logging.info(f"Removed rss role for channel {channel_id}")
-                await ctx.send("No role will be notified on new rss entries", hidden=True)
-                return
+        if self.config.has_section(guild_id) and self.config.has_option(
+            guild_id, f"{channel_id}_role"
+        ):
+            self.config.remove_option(guild_id, f"{channel_id}_role")
+            with open(Config.get_file(), 'w', encoding="utf-8") as f:
+                self.config.write(f)
+            logging.info(f"Removed rss role for channel {channel_id}")
+            await ctx.send("No role will be notified on new rss entries", hidden=True)
+            return
         await ctx.send("No rss feed had been setup", hidden=True)
 
     @has_guild_permissions(manage_roles=True)
@@ -176,7 +177,7 @@ class RSS(Cog):
     @tasks.loop(minutes=15.0)
     async def check_feeds(self):
         for guild_id in self.config.sections():
-            logging.info("Checking rss feed for server " + guild_id)
+            logging.info(f"Checking rss feed for server {guild_id}")
             if self.config.has_option(guild_id, "rss_channels"):
                 channel_ids = self.config.get(guild_id, "rss_channels").split(",")
                 for channel_id in channel_ids:
@@ -184,7 +185,7 @@ class RSS(Cog):
                     link = self.config.get(guild_id, f"{channel_id}_link")
                     d = feedparser.parse(link)
                     if not d.entries or len(d.entries) == 0:
-                        logging.error("No rss entries found for link " + link)
+                        logging.error(f"No rss entries found for link {link}")
                         continue
                     post = d.entries[0]
                     html = (post.summary.encode('utf-8', 'ignore').decode('utf-8'))
@@ -192,7 +193,9 @@ class RSS(Cog):
                     text_hash = hash(text)
                     try:
                         # This check will always return true on first run, when PYTHONHASHSEED is not set
-                        if not text_hash == self.config.getint(guild_id, f"{channel_id}_hash"):
+                        if text_hash != self.config.getint(
+                            guild_id, f"{channel_id}_hash"
+                        ):
                             if self.config.has_option(guild_id, f"{channel_id}_role"):
                                 await send_rss_entry(self, int(channel_id),
                                                      self.config.get(guild_id, f"{channel_id}_link"),

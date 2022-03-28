@@ -69,9 +69,9 @@ class TUB(Cog):
         if error_message:
             embed = discord.Embed(title="Autolab Server Status", color=0xff0000)
             embed.add_field(name="Error", value=f"{error_message}", inline=False)
-            await ctx.send(embed=embed, hidden=True)
         else:
             embed = discord.Embed(title="Autolab Server Status", color=0x00ff00,
                                   url="https://autolab.service.tu-berlin.de/")
             embed.add_field(name="Autolab", value=f"{autolab_status}", inline=True)
-            await ctx.send(embed=embed, hidden=True)
+
+        await ctx.send(embed=embed, hidden=True)
