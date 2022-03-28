@@ -22,10 +22,13 @@ class TUB(Cog):
         error_message_isis = None
         error_message_shibboleth = None
         try:
-            r_isis = requests.get("https://isis.tu-berlin.de/")
+            r_isis = requests.get("https://isis.tu-berlin.de/", timeout=3)
             isis_status = r_isis.status_code
         except Exception as e:
-            error_message_isis = f"Error: {e}"
+            if isinstance(e, requests.exceptions.ConnectTimeout):
+                error_message_isis = f"Timeout Error: {e}"
+            else:
+                error_message_isis = f"Error: {e}"
 
         try:
             r_shibboleth = requests.get(
@@ -60,11 +63,14 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         try:
-            r_autolab = requests.get("https://autolab.service.tu-berlin.de/")
+            r_autolab = requests.get("https://autolab.service.tu-berlin.de/", timeout=3)
             autolab_status = r_autolab.status_code
             error_message = None
         except Exception as e:
-            error_message = f"Error: {e}"
+            if isinstance(e, requests.exceptions.ConnectTimeout):
+                error_message = f"Timeout Error: {e}"
+            else:
+                error_message = f"Error: {e}"
 
         if error_message:
             embed = discord.Embed(title="Autolab Server Status", color=0xff0000)
@@ -74,4 +80,25 @@ class TUB(Cog):
             embed = discord.Embed(title="Autolab Server Status", color=0x00ff00,
                                   url="https://autolab.service.tu-berlin.de/")
             embed.add_field(name="Autolab", value=f"{autolab_status}", inline=True)
+            await ctx.send(embed=embed, hidden=True)
+    @cog_ext.cog_slash(name="moses", guild_ids=guild_ids, description="Get Moses server status")
+    async def moses(self, ctx: SlashContext):
+        try:
+            r_moses = requests.get("https://moseskonto.tu-berlin.de/moses/index.html", timeout=3)
+            moses_status = r_moses.status_code
+            error_message = None
+        except Exception as e:
+            if isinstance(e, requests.exceptions.ConnectTimeout):
+                error_message = f"Timeout Error: {e}"
+            else:
+                error_message = f"Error: {e}"
+
+        if error_message:
+            embed = discord.Embed(title="Moses Server Status", color=0xff0000)
+            embed.add_field(name="Error", value=f"{error_message}", inline=False)
+            await ctx.send(embed=embed, hidden=True)
+        else:
+            embed = discord.Embed(title="Moses Server Status", color=0x00ff00,
+                                  url="https://moseskonto.tu-berlin.de/moses/index.html")
+            embed.add_field(name="Moses", value=f"{moses_status}", inline=True)
             await ctx.send(embed=embed, hidden=True)
