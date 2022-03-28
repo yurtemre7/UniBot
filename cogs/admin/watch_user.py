@@ -52,11 +52,9 @@ class WatchUser(Cog):
         else:
 
             category_id = self.config.get(guild_id, "watch_category", fallback=None)
-            valid_category = category_id and discord.utils.get(ctx.guild.categories, id=int(category_id))
-            if not valid_category:
-                await ctx.send("Please set a category for the new channels first. Use /watch_category.",
-                               hidden=True)
-            else:
+            if valid_category := category_id and discord.utils.get(
+                ctx.guild.categories, id=int(category_id)
+            ):
                 watch_category = discord.utils.get(ctx.guild.categories, id=int(category_id))
                 new_channel = await ctx.guild.create_text_channel(name=f"{user.name}", category=watch_category)
                 watched_dict[str(user.id)] = str(new_channel.id)
@@ -75,6 +73,9 @@ class WatchUser(Cog):
                     "It will be deleted automatically when the user gets removed from the watch list.")
 
                 await ctx.send(f"Successfully added {user.mention} to watch list, see {new_channel.mention}",
+                               hidden=True)
+            else:
+                await ctx.send("Please set a category for the new channels first. Use /watch_category.",
                                hidden=True)
 
     @has_guild_permissions(manage_roles=True)
@@ -139,8 +140,7 @@ class WatchUser(Cog):
                     watched_users = watched_users[:24]
 
                 for user_id in watched_users:
-                    user = self.bot.get_user(user_id)
-                    if user:
+                    if user := self.bot.get_user(user_id):
                         embed.add_field(name=user.name,
                                         value=
                                         f"{user.mention} "

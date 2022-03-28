@@ -98,9 +98,7 @@ class Listen(Cog):
 
                         # List of media urls, display first image
                         if message.attachments:
-                            links = ""
-                            for url in message.attachments:
-                                links += str(url) + "\n"
+                            links = "".join(str(url) + "\n" for url in message.attachments)
                             embed.add_field(name="Media: ", value=links, inline=False)
                             embed.set_image(url=message.attachments[0])
 

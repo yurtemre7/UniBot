@@ -64,7 +64,7 @@ class Roles(Cog):
             channel = self.bot.get_channel(channel_id)
             msg = await channel.fetch_message(msg_id)
 
-            self.config.set(guild_id, f"{msg_id}_{emoji}", str(role))
+            self.config.set(guild_id, f"{msg_id}_{emoji}", role)
             try:
                 with open(Config.get_file(), 'w', encoding='utf-8') as f:
                     self.config.write(f)
@@ -73,7 +73,7 @@ class Roles(Cog):
                 await msg.add_reaction(emoji)
                 await ctx.send(f"Successfully added role \'{role}\'", hidden=True)
             except errors.HTTPException:
-                self.config.remove_option(guild_id, str(emoji))
+                self.config.remove_option(guild_id, emoji)
                 with open(Config.get_file(), 'w', encoding='utf-8') as f:
                     self.config.write(f)
                 await ctx.send("Error: Make sure you only use standard emojis or emojis from this server", hidden=True)
@@ -97,8 +97,6 @@ class Roles(Cog):
                            )
                        ])
     async def remove_reaction_role(self, ctx: SlashContext, message_link: str, emoji: str):
-        guild_id = str(ctx.guild_id)
-
         if "https://discord.com/channels/" in message_link:
 
             # Get message object from link
@@ -107,6 +105,8 @@ class Roles(Cog):
             msg_id = int(link[6])
             channel = self.bot.get_channel(channel_id)
             msg = await channel.fetch_message(msg_id)
+
+            guild_id = str(ctx.guild_id)
 
             if not self.config.has_option(guild_id, f"{msg_id}_{emoji}"):
                 await ctx.send(f"Could not find \'{emoji}\' role for this message", hidden=True)

@@ -16,7 +16,7 @@ class Config:
     @classmethod
     def get_file(cls):
         load_dotenv()
-        return cls.get_data_dir() + "config.ini"
+        return f'{cls.get_data_dir()}config.ini'
 
     @classmethod
     def get_guild_ids(cls):
