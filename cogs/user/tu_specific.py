@@ -5,6 +5,7 @@ import requests
 from configparser import ConfigParser
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
+import time
 
 from util.config import Config
 
@@ -22,23 +23,23 @@ class TUB(Cog):
         error_message_isis = None
         error_message_shibboleth = None
         try:
-            r_isis = requests.get("https://isis.tu-berlin.de/", timeout=3)
+            r_isis = requests.get("https://isis.tu-berlin.de/", timeout=1.1)
             isis_status = r_isis.status_code
         except Exception as e:
             if isinstance(e, requests.exceptions.ConnectTimeout):
-                error_message_isis = f"Timeout Error: {e}"
+                error_message_isis = "Connection timed out."
             else:
-                error_message_isis = f"Error: {e}"
+                error_message_isis = type(e).__name__
 
         try:
             r_shibboleth = requests.get(
-                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1", timeout=3)
+                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1", timeout=1.1)
             shibboleth_status = r_shibboleth.status_code
         except Exception as e:
             if isinstance(e, requests.exceptions.ConnectTimeout):
-                error_message_shibboleth = f"Timeout Error: {e}"
+                error_message_shibboleth = "Connection timed out."
             else:
-                error_message_shibboleth = f"Error: {e}"
+                error_message_shibboleth = type(e).__name__
 
         if error_message_isis or error_message_shibboleth:
             if error_message_isis and error_message_shibboleth:
@@ -66,14 +67,14 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         try:
-            r_autolab = requests.get("https://autolab.service.tu-berlin.de/", timeout=3, verify=False)
+            r_autolab = requests.get("https://autolab.service.tu-berlin.de/", timeout=2, verify=False)
             autolab_status = r_autolab.status_code
             error_message = None
         except Exception as e:
             if isinstance(e, requests.exceptions.ConnectTimeout):
-                error_message = f"Timeout Error: {e}"
+                error_message = "Connection timed out."
             else:
-                error_message = f"Error: {e}"
+                error_message = type(e).__name__
 
         if error_message:
             embed = discord.Embed(title="Autolab Server Status", color=0xff0000)
@@ -84,17 +85,18 @@ class TUB(Cog):
                                   url="https://autolab.service.tu-berlin.de/")
             embed.add_field(name="Autolab", value=f"{autolab_status}", inline=True)
             await ctx.send(embed=embed, hidden=True)
+
     @cog_ext.cog_slash(name="moses", guild_ids=guild_ids, description="Get Moses server status")
     async def moses(self, ctx: SlashContext):
         try:
-            r_moses = requests.get("https://moseskonto.tu-berlin.de/moses/index.html", timeout=3)
+            r_moses = requests.get("https://moseskonto.tu-berlin.de/moses/index.html", timeout=2)
             moses_status = r_moses.status_code
             error_message = None
         except Exception as e:
             if isinstance(e, requests.exceptions.ConnectTimeout):
-                error_message = f"Timeout Error: {e}"
+                error_message = "Connection timed out."
             else:
-                error_message = f"Error: {e}"
+                error_message = type(e).__name__
 
         if error_message:
             embed = discord.Embed(title="Moses Server Status", color=0xff0000)
