@@ -63,7 +63,7 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         try:
-            r_autolab = requests.get("https://autolab.service.tu-berlin.de/", timeout=3)
+            r_autolab = requests.get("https://autolab.service.tu-berlin.de/", timeout=3, verify=False)
             autolab_status = r_autolab.status_code
             error_message = None
         except Exception as e:
