@@ -32,10 +32,13 @@ class TUB(Cog):
 
         try:
             r_shibboleth = requests.get(
-                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1")
+                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1", timeout=3)
             shibboleth_status = r_shibboleth.status_code
         except Exception as e:
-            error_message_shibboleth = f"Error: {e}"
+            if isinstance(e, requests.exceptions.ConnectTimeout):
+                error_message_shibboleth = f"Timeout Error: {e}"
+            else:
+                error_message_shibboleth = f"Error: {e}"
 
         if error_message_isis or error_message_shibboleth:
             if error_message_isis and error_message_shibboleth:
