@@ -2,10 +2,11 @@ import codecs
 import logging
 from configparser import ConfigParser
 
-from discord.ext.commands import Bot, Cog, has_guild_permissions, errors
+from discord.ext.commands import Cog, has_guild_permissions, errors
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
+from main import UniBot
 from util.config import Config
 guild_ids = Config.get_guild_ids()
 
@@ -22,7 +23,7 @@ MENTIONABLE = 9
 
 
 class Roles(Cog):
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: UniBot):
         self.bot = bot
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
