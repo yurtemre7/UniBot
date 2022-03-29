@@ -32,7 +32,7 @@ class UniBot(Bot):
         intents.messages = True
         intents.emojis = True
         intents.bans = True
-        super().__init__(command_prefix="$", self_bot=True, help_command=None, intents=intents)
+        super().__init__(command_prefix="$", help_command=None, intents=intents)
 
     async def on_ready(self):
         self.load_extension("cogs.admin")
