@@ -1,10 +1,10 @@
 import codecs
-from configparser import ConfigParser
 import logging
-import feedparser
-import html2text
+from configparser import ConfigParser
 
 import discord
+import feedparser
+import html2text
 from discord.ext import tasks
 from discord.ext.commands import Cog, has_guild_permissions
 from discord_slash import SlashContext, cog_ext
@@ -12,6 +12,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from main import UniBot
 from util.config import Config
+
 guild_ids = Config.get_guild_ids()
 
 #   --- Option Types ---

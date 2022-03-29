@@ -1,7 +1,6 @@
 from main import UniBot
-
-from .user_commands import User
 from .tu_specific import TUB
+from .user_commands import User
 
 
 def setup(bot: UniBot):

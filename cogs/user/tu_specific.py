@@ -1,11 +1,10 @@
 import codecs
+from configparser import ConfigParser
 
 import aiohttp.helpers
 import discord
-from configparser import ConfigParser
 from discord.ext.commands import Cog
 from discord_slash import SlashContext, cog_ext
-import time
 
 from main import UniBot
 from util.config import Config

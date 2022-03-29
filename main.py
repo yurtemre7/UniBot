@@ -39,7 +39,7 @@ class UniBot(Bot):
 
     async def on_ready(self):
         print("Ready")
-        logging.info("Startup")
+        logging.info(f"Startup as {self.user} / {self.user.id}")
 
     async def register_aiohttp_session(self):
         self.aiohttp_session = aiohttp.ClientSession()

@@ -6,6 +6,7 @@ from discord_slash import SlashContext, cog_ext
 
 from main import UniBot
 from util.config import Config
+
 guild_ids = Config.get_guild_ids()
 
 #   --- Option Types ---

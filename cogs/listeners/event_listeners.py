@@ -1,5 +1,5 @@
-import json
 import codecs
+import json
 import logging
 from configparser import ConfigParser
 from datetime import datetime

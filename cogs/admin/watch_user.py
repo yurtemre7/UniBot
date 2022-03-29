@@ -1,6 +1,5 @@
-import json
 import codecs
-import logging
+import json
 from configparser import ConfigParser
 
 import discord

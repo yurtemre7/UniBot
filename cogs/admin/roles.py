@@ -8,6 +8,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from main import UniBot
 from util.config import Config
+
 guild_ids = Config.get_guild_ids()
 
 
