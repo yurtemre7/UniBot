@@ -1,7 +1,7 @@
 import codecs
 
+import aiohttp.helpers
 import discord
-import requests
 from configparser import ConfigParser
 from discord.ext.commands import Cog
 from discord_slash import SlashContext, cog_ext
@@ -24,20 +24,19 @@ class TUB(Cog):
         error_message_isis = None
         error_message_shibboleth = None
         try:
-            r_isis = requests.get("https://isis.tu-berlin.de/", timeout=1.1)
-            isis_status = r_isis.status_code
+            async with self.bot.aiohttp_session.get("https://isis.tu-berlin.de/") as r:
+                isis_status = r.status
         except Exception as e:
-            if isinstance(e, requests.exceptions.ConnectTimeout):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message_isis = "Connection timed out."
             else:
                 error_message_isis = type(e).__name__
 
         try:
-            r_shibboleth = requests.get(
-                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1", timeout=1.1)
-            shibboleth_status = r_shibboleth.status_code
+            async with self.bot.aiohttp_session.get("https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1") as r:
+                shibboleth_status = r.status
         except Exception as e:
-            if isinstance(e, requests.exceptions.ConnectTimeout):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message_shibboleth = "Connection timed out."
             else:
                 error_message_shibboleth = type(e).__name__
@@ -68,11 +67,11 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         try:
-            r_autolab = requests.get("https://autolab.service.tu-berlin.de/", timeout=2, verify=False)
-            autolab_status = r_autolab.status_code
+            async with self.bot.aiohttp_session.get("https://autolab.service.tu-berlin.de/") as r:
+                autolab_status = r.status
             error_message = None
         except Exception as e:
-            if isinstance(e, requests.exceptions.ConnectTimeout):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message = "Connection timed out."
             else:
                 error_message = type(e).__name__
@@ -90,11 +89,11 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="moses", guild_ids=guild_ids, description="Get Moses server status")
     async def moses(self, ctx: SlashContext):
         try:
-            r_moses = requests.get("https://moseskonto.tu-berlin.de/moses/index.html", timeout=2)
-            moses_status = r_moses.status_code
+            async with self.bot.aiohttp_session.get("https://moseskonto.tu-berlin.de/moses/index.html") as r:
+                moses_status = r.status
             error_message = None
         except Exception as e:
-            if isinstance(e, requests.exceptions.ConnectTimeout):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message = "Connection timed out."
             else:
                 error_message = type(e).__name__
