@@ -21,9 +21,11 @@ class Listen(Cog):
     @Cog.listener()
     async def on_message(self, message: discord.Message):
         logging.info(f"{message.author}: {message.content}")
-        if not message.author.bot:
-            if "plagiat" in message.content.lower():
-                await message.add_reaction("🚨")
+        if (
+            not message.author.bot
+            and "plagiat" in message.content.lower()
+        ):
+            await message.add_reaction("🚨")
 
 
     # Reaction Roles
