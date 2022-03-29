@@ -1,7 +1,7 @@
 import codecs
 from configparser import ConfigParser
 
-import aiohttp.helpers
+import aiohttp
 import discord
 from discord.ext.commands import Cog
 from discord_slash import SlashContext, cog_ext
