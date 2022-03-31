@@ -1,5 +1,5 @@
-import json
 import codecs
+import json
 import logging
 from configparser import ConfigParser
 from datetime import datetime
@@ -27,7 +27,6 @@ class Listen(Cog):
         ):
             await message.add_reaction("🚨")
 
-
     # Reaction Roles
     @Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
@@ -37,7 +36,6 @@ class Listen(Cog):
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
 
         guild_id = str(payload.guild_id)
-        channel_id = str(payload.channel_id)
         message_id = str(payload.message_id)
         emoji = str(payload.emoji)
 
@@ -53,7 +51,6 @@ class Listen(Cog):
     @Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
         guild_id = str(payload.guild_id)
-        channel_id = str(payload.channel_id)
         message_id = str(payload.message_id)
         emoji = str(payload.emoji)
 
