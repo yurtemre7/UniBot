@@ -1,6 +1,4 @@
-import asyncio
 import codecs
-import logging
 from configparser import ConfigParser
 
 import aiohttp
@@ -24,71 +22,57 @@ class TUB(Cog):
     async def isis(self, ctx):
         error_message_isis = None
         error_message_shibboleth = None
-
         try:
-            async with self.bot.aiohttp_session.get(
-                    "https://isis.tu-berlin.de/",
-                    timeout=1.2) as r:
+            async with self.bot.aiohttp_session.get("https://isis.tu-berlin.de/") as r:
                 isis_status = r.status
         except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message_isis = "Connection timed out."
             else:
                 error_message_isis = type(e).__name__
 
         try:
-            async with self.bot.aiohttp_session.get(
-                    "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1",
-                    timeout=1.2) as r:
+            async with self.bot.aiohttp_session.get("https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1") as r:
                 shibboleth_status = r.status
         except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message_shibboleth = "Connection timed out."
             else:
                 error_message_shibboleth = type(e).__name__
 
-        match (error_message_isis, error_message_shibboleth):
-            case (None, None):
-                match (isis_status, shibboleth_status):
-                    case (200, 200):
-                        color = 0x00ff00
-                    case (200, _) | (_, 200):
-                        color = 0xFFAD00
-                    case _:
-                        color = 0xFF0000
-
-            case (_, None):
-                isis_status = error_message_isis
-                color = 0xFFAD00
-
-            case (None, _):
-                shibboleth_status = error_message_shibboleth
-                color = 0xFFAD00
-
-            case (_, _):
-                isis_status = error_message_isis
-                shibboleth_status = error_message_shibboleth
+        if error_message_isis or error_message_shibboleth:
+            if error_message_isis and error_message_shibboleth:
                 color = 0xff0000
+            else:
+                color = 0xFFAD00
+            embed = discord.Embed(title="ISIS Server Status", color=color, url="https://isisis.online")
+            embed.add_field(name="ISIS", value=f"{error_message_isis}", inline=False)
+            embed.add_field(name="Shibboleth", value=f"{error_message_shibboleth}", inline=False)
+            await ctx.send(embed=embed, hidden=True)
+        else:
+            match (isis_status, shibboleth_status):
+                case (200, 200):
+                    color = 0x00ff00
+                case (200, _) | (_, 200):
+                    color = 0xFFAD00
+                case _:
+                    color = 0xFF0000
 
-        embed = discord.Embed(title="ISIS Server Status", color=color)
-        embed.add_field(name="ISIS", value=f"{isis_status}", inline=True)
-        embed.add_field(name="Shibboleth", value=f"{shibboleth_status}", inline=True)
-        await ctx.send(embed=embed, hidden=True)
+            embed = discord.Embed(title="ISIS Server Status", color=color, url="https://isisis.online")
+            embed.add_field(name="ISIS", value=f"{isis_status}", inline=True)
+            embed.add_field(name="Shibboleth", value=f"{shibboleth_status}", inline=True)
+            await ctx.send(embed=embed, hidden=True)
 
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         try:
-            async with self.bot.aiohttp_session.get(
-                    "https://autolab.service.tu-berlin.de/",
-                    verify_ssl=False,
-                    timeout=2) as r:
+            async with self.bot.aiohttp_session.get("https://autolab.service.tu-berlin.de/") as r:
                 autolab_status = r.status
             error_message = None
         except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message = "Connection timed out."
             else:
-                logging.error(e)
                 error_message = type(e).__name__
 
         if error_message:
@@ -104,13 +88,11 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="moses", guild_ids=guild_ids, description="Get Moses server status")
     async def moses(self, ctx: SlashContext):
         try:
-            async with self.bot.aiohttp_session.get(
-                    "https://moseskonto.tu-berlin.de/moses/index.html",
-                    timeout=2) as r:
+            async with self.bot.aiohttp_session.get("https://moseskonto.tu-berlin.de/moses/index.html") as r:
                 moses_status = r.status
             error_message = None
         except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
+            if isinstance(e, aiohttp.ServerTimeoutError):
                 error_message = "Connection timed out."
             else:
                 error_message = type(e).__name__
