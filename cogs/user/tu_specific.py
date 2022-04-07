@@ -86,7 +86,7 @@ class TUB(Cog):
         embed = discord.Embed(title="ISIS Server Status", color=color)
         embed.add_field(name="ISIS", value=f"{isis_status}", inline=True)
         embed.add_field(name="Shibboleth", value=f"{shibboleth_status}", inline=True)
-        await ctx.send(embed=embed, hidden=True)
+        await ctx.send(embed=embed, hidden=False)
 
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
@@ -96,7 +96,7 @@ class TUB(Cog):
             skip_ssl_verify=True)
 
         embed = self.build_embed("Autolab", "https://autolab.service.tu-berlin.de/", status, error_message)
-        await ctx.send(embed=embed, hidden=True)
+        await ctx.send(embed=embed, hidden=False)
 
     @cog_ext.cog_slash(name="moses", guild_ids=guild_ids, description="Get Moses server status")
     async def moses(self, ctx: SlashContext):
@@ -106,7 +106,7 @@ class TUB(Cog):
             timeout=2)
 
         embed = self.build_embed("Moses", domain, status, error_message)
-        await ctx.send(embed=embed, hidden=True)
+        await ctx.send(embed=embed, hidden=False)
 
     @cog_ext.cog_slash(name="printer", guild_ids=guild_ids, description="Get status of CG's printer")
     async def printer(self, ctx: SlashContext):
