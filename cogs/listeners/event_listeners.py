@@ -70,7 +70,8 @@ class Listen(Cog):
     @Cog.listener()
     async def on_message_delete(self, message: discord.Message):
         guild_id = str(message.guild.id)
-
+        self.config.read_file(
+            codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
         # Log messages deleted by mods
         logging.info(f"Delete {message.author}'s message: {message.content}")
         if (not message.author.bot) and self.config.has_option(guild_id, "modlog"):
@@ -101,8 +102,6 @@ class Listen(Cog):
                             embed.add_field(name="Media: ", value=links, inline=False)
                             embed.set_image(url=message.attachments[0])
 
-                        self.config.read_file(
-                            codecs.open(Config.get_file(), "r", "utf8"))  # Make sure data is up to date
                         modlog_id = self.config.get(guild_id, "modlog")
                         modlog = await self.bot.fetch_channel(modlog_id)
                         logging.info("Sending message delete log")
