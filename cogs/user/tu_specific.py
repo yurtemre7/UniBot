@@ -39,7 +39,7 @@ class TUB(Cog):
     @staticmethod
     def build_embed(title, url, status, error_message):
         if error_message:
-            embed = discord.Embed(title=f"{title} Server Status", color=0xff0000)
+            embed = discord.Embed(title=f"{title} Server Status", color=0xff0000, url=url)
             embed.add_field(name="Error", value=f"{error_message}", inline=False)
             return embed
         else:
@@ -83,7 +83,7 @@ class TUB(Cog):
                 shibboleth_status = error_message_shibboleth
                 color = 0xff0000
 
-        embed = discord.Embed(title="ISIS Server Status", color=color)
+        embed = discord.Embed(title="ISIS Server Status", color=color, url="https://isis.tu-berlin.de")
         embed.add_field(name="ISIS", value=f"{isis_status}", inline=True)
         embed.add_field(name="Shibboleth", value=f"{shibboleth_status}", inline=True)
         await ctx.send(embed=embed, hidden=False)
