@@ -3,7 +3,6 @@ import codecs
 import logging
 from configparser import ConfigParser
 
-import aiohttp
 import discord
 from discord.ext.commands import Cog
 from discord_slash import SlashContext, cog_ext
@@ -20,32 +19,46 @@ class TUB(Cog):
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
+    async def get_server_status(self, domain, timeout=2, skip_ssl_verify=False):
+        status = None
+        error_message = None
+        try:
+            async with self.bot.aiohttp_session.get(
+                    domain,
+                    timeout=timeout,
+                    verify_ssl=not skip_ssl_verify) as r:
+                status = r.status
+        except Exception as e:
+            if isinstance(e, asyncio.TimeoutError):
+                error_message = "Connection timed out."
+            else:
+                error_message = type(e).__name__
+
+        return status, error_message
+
+    @staticmethod
+    def build_embed(title, url, status, error_message):
+        if error_message:
+            embed = discord.Embed(title=f"{title} Server Status", color=0xff0000)
+            embed.add_field(name="Error", value=f"{error_message}", inline=False)
+            return embed
+        else:
+            embed = discord.Embed(title=f"{title} Server Status", color=0x00ff00,
+                                  url=url)
+            embed.add_field(name=title, value=f"{status}", inline=True)
+            return embed
+
     @cog_ext.cog_slash(name="isis", guild_ids=guild_ids, description="Get ISIS server status")
     async def isis(self, ctx):
-        error_message_isis = None
-        error_message_shibboleth = None
-
-        try:
-            async with self.bot.aiohttp_session.get(
-                    "https://isis.tu-berlin.de/",
-                    timeout=1.2) as r:
-                isis_status = r.status
-        except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
-                error_message_isis = "Connection timed out."
-            else:
-                error_message_isis = type(e).__name__
-
-        try:
-            async with self.bot.aiohttp_session.get(
-                    "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1",
-                    timeout=1.2) as r:
-                shibboleth_status = r.status
-        except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
-                error_message_shibboleth = "Connection timed out."
-            else:
-                error_message_shibboleth = type(e).__name__
+        (isis_status, error_message_isis), (shibboleth_status, error_message_shibboleth) \
+         = await asyncio.gather(
+            self.get_server_status(
+                "https://isis.tu-berlin.de",
+                timeout=2),
+            self.get_server_status(
+                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1",
+                timeout=2)
+        )
 
         match (error_message_isis, error_message_shibboleth):
             case (None, None):
@@ -77,50 +90,37 @@ class TUB(Cog):
 
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
-        try:
-            async with self.bot.aiohttp_session.get(
-                    "https://autolab.service.tu-berlin.de/",
-                    verify_ssl=False,
-                    timeout=2) as r:
-                autolab_status = r.status
-            error_message = None
-        except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
-                error_message = "Connection timed out."
-            else:
-                logging.error(e)
-                error_message = type(e).__name__
+        status, error_message = await self.get_server_status(
+            domain="https://autolab.service.tu-berlin.de/",
+            timeout=2,
+            skip_ssl_verify=True)
 
-        if error_message:
-            embed = discord.Embed(title="Autolab Server Status", color=0xff0000)
-            embed.add_field(name="Error", value=f"{error_message}", inline=False)
-            await ctx.send(embed=embed, hidden=True)
-        else:
-            embed = discord.Embed(title="Autolab Server Status", color=0x00ff00,
-                                  url="https://autolab.service.tu-berlin.de/")
-            embed.add_field(name="Autolab", value=f"{autolab_status}", inline=True)
-            await ctx.send(embed=embed, hidden=True)
+        embed = self.build_embed("Autolab", "https://autolab.service.tu-berlin.de/", status, error_message)
+        await ctx.send(embed=embed, hidden=True)
 
     @cog_ext.cog_slash(name="moses", guild_ids=guild_ids, description="Get Moses server status")
     async def moses(self, ctx: SlashContext):
-        try:
-            async with self.bot.aiohttp_session.get(
-                    "https://moseskonto.tu-berlin.de/moses/index.html",
-                    timeout=2) as r:
-                moses_status = r.status
-            error_message = None
-        except Exception as e:
-            if isinstance(e, asyncio.TimeoutError):
-                error_message = "Connection timed out."
-            else:
-                error_message = type(e).__name__
+        domain = "https://moseskonto.tu-berlin.de/moses/index.html"
+        status, error_message = await self.get_server_status(
+            domain=domain,
+            timeout=2)
+
+        embed = self.build_embed("Moses", domain, status, error_message)
+        await ctx.send(embed=embed, hidden=True)
+
+    @cog_ext.cog_slash(name="printer", guild_ids=guild_ids, description="Get status of CG's printer")
+    async def printer(self, ctx: SlashContext):
+        status, error_message = await self.get_server_status(
+            domain="http://printer.cg.tu-berlin.de",
+            timeout=2,
+            skip_ssl_verify=True)
 
         if error_message:
-            embed = discord.Embed(title="Moses Server Status", color=0xff0000)
+            embed = discord.Embed(title="Printer Status", color=0xff0000)
             embed.add_field(name="Error", value=f"{error_message}", inline=False)
-            await ctx.send(embed=embed, hidden=True)
+            await ctx.send(embed=embed, hidden=False)
         else:
-            embed = discord.Embed(title="Moses Server Status", color=0x00ff00,
-                                  url="https://moseskonto.tu-berlin.de/moses/index.html")
-            embed.add_field(name="Moses", value=f"{moses_status}", inline=True)
-            await ctx.send(embed=embed, hidden=True)
+            embed = discord.Embed(title="Printer Status", color=0x00ff00)
+            embed.add_field(name="Printer", value=f"Der Drucker des Fachbereichs ist online :) \n{status}",
+                            inline=False)
+            await ctx.send(embed=embed, hidden=False)
