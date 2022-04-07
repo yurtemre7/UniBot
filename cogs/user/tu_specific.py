@@ -121,6 +121,7 @@ class TUB(Cog):
             await ctx.send(embed=embed, hidden=False)
         else:
             embed = discord.Embed(title="Printer Status", color=0x00ff00)
-            embed.add_field(name="Printer", value=f"Der Drucker des Fachbereichs ist online :) \n{status}",
+            embed.add_field(name="Printer",
+                            value=f"Der Drucker des Fachbereichs Computer Graphics ist online :) \n{status}",
                             inline=False)
             await ctx.send(embed=embed, hidden=False)
