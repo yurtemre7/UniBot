@@ -25,6 +25,7 @@ A Discord bot intended for the use on student-run university severs.
 	- [ ] Voice channel mutes
  - [x] Log certain users deleting their own messages
  - [ ] Check if link points to valid RSS feed before adding it 
+ - [ ] Prevent users from escaping certain roles by rejoining
 
 ### Useful
  - [x] Equivalent to [isISIS.online](https://isisis.online/)
