@@ -1,7 +1,7 @@
 FROM python:3.10-slim
 
 ADD requirements.txt /bot/
-RUN pip install -r requirements.txt
+RUN pip install -r /bot/requirements.txt
 
 ADD main.py /bot/
 ADD cogs/ /bot/cogs/
