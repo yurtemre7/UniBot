@@ -19,6 +19,7 @@ class TUB(Cog):
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
+    @staticmethod
     async def get_server_status(self, domain, timeout=2, skip_ssl_verify=False):
         status = None
         error_message = None

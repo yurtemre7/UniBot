@@ -10,6 +10,7 @@ from discord.ext.commands import Cog, has_guild_permissions
 from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 
+from cogs.user import tu_specific
 from main import UniBot
 from util.config import Config
 
@@ -183,7 +184,13 @@ class RSS(Cog):
                 channel_ids = self.config.get(guild_id, "rss_channels").split(",")
                 for channel_id in channel_ids:
                     logging.info("Checking rss feed for channel " + str(channel_id))
-                    link = self.config.get(guild_id, f"{channel_id}_link")
+                    link = self.config.get(guild_id, f"{channel_id}_link", fallback=None)
+                    if not link:
+                        continue
+                    response = await tu_specific.TUB.get_server_status(self, link)
+                    if response[0] != 200:
+                        logging.error(f"Rss feed {link} returned code {response[0]}")
+                        continue
                     d = feedparser.parse(link)
                     if not d.entries or len(d.entries) == 0:
                         logging.error("No rss entries found for link " + link)
