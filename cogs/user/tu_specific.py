@@ -20,7 +20,7 @@ class TUB(Cog):
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
-    async def get_server_status(self, domain : str, timeout = 2, skip_ssl_verify=False):
+    async def get_server_status(self, domain : str, timeout = 2):
         status = None
         error_message = None
         try:
@@ -53,12 +53,10 @@ class TUB(Cog):
     async def isis(self, ctx):
         (isis_status, error_message_isis), (shibboleth_status, error_message_shibboleth) = await asyncio.gather(
             self.get_server_status(
-                domain="https://isis.tu-berlin.de",
-                timeout=2
+                domain="https://isis.tu-berlin.de"
             ),
             self.get_server_status(
-                domain="https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1",
-                timeout=2
+                domain="https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1"
             )
         )
 
@@ -93,8 +91,7 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         status, error_message = await self.get_server_status(
-            domain="https://autolab.service.tu-berlin.de/",
-            timeout=2
+            domain="https://autolab.service.tu-berlin.de/"
         )
 
         embed = self.build_embed("Autolab", "https://autolab.service.tu-berlin.de/", status, error_message)
@@ -104,8 +101,7 @@ class TUB(Cog):
     async def moses(self, ctx: SlashContext):
         domain = "https://moseskonto.tu-berlin.de/moses/index.html"
         status, error_message = await self.get_server_status(
-            domain=domain,
-            timeout=2
+            domain=domain
         )
 
         embed = self.build_embed("Moses", domain, status, error_message)
@@ -114,8 +110,7 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="printer", guild_ids=guild_ids, description="Get status of CG's printer")
     async def printer(self, ctx: SlashContext):
         status, error_message = await self.get_server_status(
-            domain="http://printer.cg.tu-berlin.de",
-            timeout=2
+            domain="http://printer.cg.tu-berlin.de"
         )
 
         if error_message:
