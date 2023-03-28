@@ -35,3 +35,8 @@ A Discord bot intended for the use on student-run university severs.
  * If there are multiple new entries in an RSS feed, only the latest one will be posted
  * Bot crashes if it lacks permissions to send RSS entries into a channel
 
+## Building docker image
+`docker build -t nilsdeckert/unibot:latest .`
+
+(Pushing to dockerhub)
+`docker push nilsdeckert/unibot:latest`
