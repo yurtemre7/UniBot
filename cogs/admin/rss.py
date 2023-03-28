@@ -187,7 +187,7 @@ class RSS(Cog):
                     link = self.config.get(guild_id, f"{channel_id}_link", fallback=None)
                     if not link:
                         continue
-                    response = await tu_specific.TUB.get_server_status(self, link)
+                    response = await tu_specific.TUB.get_server_status(self, domain=link)
                     if response[0] != 200:
                         logging.error(f"Rss feed {link} returned code {response[0]}")
                         continue

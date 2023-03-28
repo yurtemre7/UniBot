@@ -6,6 +6,7 @@ from configparser import ConfigParser
 import discord
 from discord.ext.commands import Cog
 from discord_slash import SlashContext, cog_ext
+import httpx
 
 from main import UniBot
 from util.config import Config
@@ -19,16 +20,15 @@ class TUB(Cog):
         self.config = ConfigParser(delimiters="=")
         self.config.read_file(codecs.open(Config.get_file(), "r", "utf8"))
 
-    @staticmethod
-    async def get_server_status(self, domain, timeout=2, skip_ssl_verify=False):
+    async def get_server_status(self, domain : str, timeout = 2):
         status = None
         error_message = None
         try:
-            async with self.bot.aiohttp_session.get(
-                    domain,
-                    timeout=timeout,
-                    verify_ssl=not skip_ssl_verify) as r:
-                status = r.status
+            r : httpx.Response = await self.bot.httpxClient.get(
+                domain,
+                timeout=timeout
+            )
+            status = r.status_code
         except Exception as e:
             if isinstance(e, asyncio.TimeoutError):
                 error_message = "Connection timed out."
@@ -42,23 +42,22 @@ class TUB(Cog):
         if error_message:
             embed = discord.Embed(title=f"{title} Server Status", color=0xff0000, url=url)
             embed.add_field(name="Error", value=f"{error_message}", inline=False)
-            return embed
         else:
             embed = discord.Embed(title=f"{title} Server Status", color=0x00ff00,
                                   url=url)
             embed.add_field(name=title, value=f"{status}", inline=True)
-            return embed
 
-    @cog_ext.cog_slash(name="isis", guild_ids=guild_ids, description="Get ISIS server status")
+        return embed
+
+    @cog_ext.cog_slash(name="isis", guild_ids=guild_ids, description="Get ISIS and SHIBBOLETH server status")
     async def isis(self, ctx):
-        (isis_status, error_message_isis), (shibboleth_status, error_message_shibboleth) \
-         = await asyncio.gather(
+        (isis_status, error_message_isis), (shibboleth_status, error_message_shibboleth) = await asyncio.gather(
             self.get_server_status(
-                "https://isis.tu-berlin.de",
-                timeout=2),
+                domain="https://isis.tu-berlin.de"
+            ),
             self.get_server_status(
-                "https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1",
-                timeout=2)
+                domain="https://shibboleth.tubit.tu-berlin.de/idp/profile/SAML2/Redirect/SSO?execution=e1s1"
+            )
         )
 
         match (error_message_isis, error_message_shibboleth):
@@ -84,7 +83,7 @@ class TUB(Cog):
                 shibboleth_status = error_message_shibboleth
                 color = 0xff0000
 
-        embed = discord.Embed(title="ISIS Server Status", color=color, url="https://isis.tu-berlin.de")
+        embed = discord.Embed(title="ISIS and Shibboleth Server Status", color=color, url="https://isis.tu-berlin.de")
         embed.add_field(name="ISIS", value=f"{isis_status}", inline=True)
         embed.add_field(name="Shibboleth", value=f"{shibboleth_status}", inline=True)
         await ctx.send(embed=embed, hidden=False)
@@ -92,9 +91,8 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="autolab", guild_ids=guild_ids, description="Get Autolab server status")
     async def autolab(self, ctx: SlashContext):
         status, error_message = await self.get_server_status(
-            domain="https://autolab.service.tu-berlin.de/",
-            timeout=2,
-            skip_ssl_verify=True)
+            domain="https://autolab.service.tu-berlin.de/"
+        )
 
         embed = self.build_embed("Autolab", "https://autolab.service.tu-berlin.de/", status, error_message)
         await ctx.send(embed=embed, hidden=False)
@@ -103,8 +101,8 @@ class TUB(Cog):
     async def moses(self, ctx: SlashContext):
         domain = "https://moseskonto.tu-berlin.de/moses/index.html"
         status, error_message = await self.get_server_status(
-            domain=domain,
-            timeout=2)
+            domain=domain
+        )
 
         embed = self.build_embed("Moses", domain, status, error_message)
         await ctx.send(embed=embed, hidden=False)
@@ -112,17 +110,15 @@ class TUB(Cog):
     @cog_ext.cog_slash(name="printer", guild_ids=guild_ids, description="Get status of CG's printer")
     async def printer(self, ctx: SlashContext):
         status, error_message = await self.get_server_status(
-            domain="http://printer.cg.tu-berlin.de",
-            timeout=2,
-            skip_ssl_verify=True)
+            domain="http://printer.cg.tu-berlin.de"
+        )
 
         if error_message:
             embed = discord.Embed(title="Printer Status", color=0xff0000)
             embed.add_field(name="Error", value=f"{error_message}", inline=False)
-            await ctx.send(embed=embed, hidden=False)
         else:
             embed = discord.Embed(title="Printer Status", color=0x00ff00)
             embed.add_field(name="Printer",
                             value=f"Der Drucker des Fachbereichs Computer Graphics ist online :) \n{status}",
                             inline=False)
-            await ctx.send(embed=embed, hidden=False)
+        await ctx.send(embed=embed, hidden=False)
