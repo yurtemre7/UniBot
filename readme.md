@@ -38,9 +38,30 @@ A Discord bot intended for the use on student-run university severs.
 ## Building & running docker image
 Insert your discord bot token into the `.env` file. Make sure the bot has the required permissions.
 
-`docker build -t nilsdeckert/unibot:latest .`
+```shell
+docker build -t nilsdeckert/unibot:latest .
+docker run -e DISCORD_TOKEN=<YOUR TOKEN> nilsdeckert/unibot:latest
 
-`docker run nilsdeckert/unibot:latest`
+# Pushing to dockerhub (only for Admin)
+docker push nilsdeckert/unibot:latest
+```
+## How to run without docker
+```sh
+mkdir data
+python -m venv env
 
-(Pushing to dockerhub)
-`docker push nilsdeckert/unibot:latest`
+# MacOS/Linux
+source env/bin/activate
+# Windows
+env\Scripts\python.exe
+
+# MacOS/Linux
+pip install -r requirements.txt
+# Windows
+env\Scripts\python.exe -m pip install -r requirements.txt
+
+# MacOS/Linux
+python main.py
+# Windows
+env\Scripts\python.exe main.py
+```
